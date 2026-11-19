@@ -1,0 +1,46 @@
+<section class="trazabilidad">
+  <header class="page-header">
+    <h1>Trazabilidad del estudiante</h1>
+    <p class="subtitle">Línea de tiempo completa: matrícula → propuesta → aprobación → director/tribunal → asesorías → antiplagio → predefensa → defensa → acta de grado → incorporación.</p>
+  </header>
+
+  <div class="filtros">
+    <label>
+      Estudiante
+      <select [(ngModel)]="estudianteSeleccionado" (change)="buscar()">
+        <option [ngValue]="undefined">Seleccione un estudiante…</option>
+        <option *ngFor="let e of estudiantes" [ngValue]="e.idEstudiante">{{ nombreEstudiante(e) }}</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+  <div class="alert info" *ngIf="cargando">Cargando línea de tiempo…</div>
+
+  <ng-container *ngIf="trazabilidad as t">
+    <div class="resumen-estudiante">
+      <strong>{{ t.estudiante }}</strong>
+      <span>{{ t.cedula }}</span>
+      <span>{{ t.carrera }}</span>
+      <span class="total-eventos">{{ t.eventos.length }} eventos</span>
+    </div>
+
+    <ol class="timeline" *ngIf="t.eventos.length; else sinEventos">
+      <li *ngFor="let ev of t.eventos; let i = index" class="evento" [class.expandido]="eventoExpandido === i">
+        <div class="punto"></div>
+        <div class="contenido" (click)="toggle(i)">
+          <div class="cabecera">
+            <span class="etapa">{{ ev.etapa }}</span>
+            <span class="fecha">{{ ev.fecha ? (ev.fecha | date:'dd/MM/yyyy HH:mm') : 'Sin fecha registrada' }}</span>
+          </div>
+          <div class="meta">
+            <span class="actor">{{ ev.actor }}</span>
+            <span class="estado" *ngIf="ev.estadoResultante">{{ ev.estadoResultante }}</span>
+          </div>
+          <div class="detalle" *ngIf="eventoExpandido === i && ev.detalle">{{ ev.detalle }}</div>
+        </div>
+      </li>
+    </ol>
+    <ng-template #sinEventos><p class="empty">Este estudiante aún no tiene eventos registrados.</p></ng-template>
+  </ng-container>
+</section>

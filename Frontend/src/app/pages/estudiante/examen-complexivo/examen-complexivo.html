@@ -1,0 +1,97 @@
+<div class="examen-complexivo" #contenedorExamen>
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+
+  <ng-container [ngSwitch]="fase()">
+
+    <div *ngSwitchCase="'cargando'" class="loading">Cargando...</div>
+
+    <div *ngSwitchCase="'sin-examen'" class="panel-centrado">
+      <h2>Examen Complexivo</h2>
+      <p>No tienes ningún examen complexivo programado todavía. Contacta a Dirección Académica.</p>
+    </div>
+
+    <div *ngSwitchCase="'anulado'" class="panel-centrado alerta-anulado">
+      <h2>Examen anulado</h2>
+      <p>Tu examen fue anulado. Motivo registrado:</p>
+      <p class="observaciones">{{ examen()?.observaciones }}</p>
+    </div>
+
+    <!-- Acta de registro de ingreso -->
+    <div *ngSwitchCase="'ingreso'" class="panel-centrado">
+      <h2>Acta de registro de ingreso</h2>
+      <p>Fecha programada: {{ examen()?.fechaProgramada }} — Tipo: {{ examen()?.tipo }}</p>
+      <div class="form-row">
+        <label>Documento de identidad</label>
+        <input type="text" [(ngModel)]="documentoIdentidad" placeholder="Cédula / pasaporte">
+      </div>
+      <div class="form-row checkbox-row">
+        <label>
+          <input type="checkbox" [(ngModel)]="firmadoCompromisosEticos">
+          Declaro haber leído y firmo los compromisos éticos del Examen Complexivo.
+        </label>
+      </div>
+      <button type="button" class="btn-primary" (click)="registrarIngreso()">Registrar ingreso y continuar</button>
+    </div>
+
+    <div *ngSwitchCase="'listo-para-iniciar'" class="panel-centrado">
+      <h2>Listo para iniciar</h2>
+      <p>El examen consta de 100 preguntas. Duración: {{ examen()?.duracionMinutos }} minutos.
+         Una vez iniciado, el cronómetro del servidor no se detiene.</p>
+      <button type="button" class="btn-primary" (click)="iniciarExamen()">Iniciar examen</button>
+    </div>
+
+    <!-- Examen en curso -->
+    <div *ngSwitchCase="'en-curso'" class="rendir">
+      <div class="barra-superior">
+        <div class="temporizador" [class.critico]="tiempoRestanteMs() < 300000">
+          ⏱ {{ minutosRestantes.toString().padStart(2,'0') }}:{{ segundosRestantes.toString().padStart(2,'0') }}
+        </div>
+        <div class="progreso">Respondidas: {{ totalRespondidas }} / {{ preguntas().length }}</div>
+        <button type="button" class="btn-finalizar" (click)="confirmarFinalizar()">Finalizar examen</button>
+      </div>
+
+      <div class="cuerpo" *ngIf="preguntaActual as p">
+        <div class="pregunta-panel">
+          <p class="numero">Pregunta {{ indiceActual() + 1 }} de {{ preguntas().length }}</p>
+          <p class="enunciado">{{ p.enunciado }}</p>
+          <div class="opcion" *ngFor="let op of p.opciones">
+            <label>
+              <input type="radio" [name]="'pregunta-' + p.idPregunta"
+                     [checked]="respuestas()[p.idPregunta] === op.idOpcion"
+                     (change)="responder(p.idPregunta, op.idOpcion)">
+              {{ op.texto }}
+            </label>
+          </div>
+
+          <div class="navegacion">
+            <button type="button" (click)="anterior()" [disabled]="indiceActual() === 0">← Anterior</button>
+            <button type="button" (click)="siguiente()" [disabled]="indiceActual() === preguntas().length - 1">Siguiente →</button>
+          </div>
+        </div>
+
+        <div class="navegador-preguntas">
+          <button type="button" *ngFor="let q of preguntas(); let i = index"
+                  class="celda"
+                  [class.actual]="i === indiceActual()"
+                  [class.respondida]="estaRespondida(q.idPregunta)"
+                  (click)="seleccionarPregunta(i)">
+            {{ i + 1 }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado -->
+    <div *ngSwitchCase="'resultado'" class="panel-centrado resultado">
+      <ng-container *ngIf="resultado() as r">
+        <h2>Resultado del examen</h2>
+        <div class="nota" [class.aprobado]="r.aprobado" [class.reprobado]="!r.aprobado">
+          {{ r.calificacion | number:'1.2-2' }} / 10
+        </div>
+        <p class="estado-texto">{{ r.aprobado ? 'APROBADO' : 'REPROBADO' }}</p>
+        <p>Respuestas correctas: {{ r.totalPreguntasCorrectas }} / {{ r.totalPreguntas }}</p>
+      </ng-container>
+    </div>
+
+  </ng-container>
+</div>

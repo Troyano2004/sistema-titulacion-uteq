@@ -1,0 +1,92 @@
+
+package com.erwin.backend.entities;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "usuario")
+public class Usuario {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_usuario")
+    private Integer idUsuario;
+
+    @Column(nullable = false, length = 20)
+    private String cedula;
+
+    @Column(name = "correo_institucional", length = 100)
+    private String correoInstitucional;
+
+    @Column(nullable = false, length = 20)
+    private String rol;
+
+    @Column(nullable = false, length = 50)
+    private String username;
+
+    @JsonIgnore
+    @Column(name = "password_hash", length = 255)
+    private String passwordHash;
+
+    @Column(length = 100)
+    private String nombres;
+
+    @Column(length = 100)
+    private String apellidos;
+
+    @Column(name = "rol_asignado", length = 20)
+    private String rolAsignado;
+
+    @Column(nullable = false)
+    private Boolean activo = true;
+
+    @Column(name = "username_db", length = 50)
+    private String usernameDb;
+
+    @JsonIgnore
+    @Column(name = "password_db_encrypted", columnDefinition = "TEXT")
+    private String passwordDbEncrypted;
+
+    // FK real a roles_sistema
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_rol", nullable = false)
+    private RolSistema rolSistema;
+
+    // ======================
+    // GETTERS
+    // ======================
+
+    public Integer getIdUsuario() { return idUsuario; }
+    public String getCedula() { return cedula; }
+    public String getCorreoInstitucional() { return correoInstitucional; }
+    public String getRol() { return rol; }
+    public String getUsername() { return username; }
+    public String getPasswordHash() { return passwordHash; }
+    public String getNombres() { return nombres; }
+    public String getApellidos() { return apellidos; }
+    public String getRolAsignado() { return rolAsignado; }
+    public Boolean getActivo() { return activo; }
+    public RolSistema getRolSistema() { return rolSistema; }
+    public String getUsernameDb() { return usernameDb; }
+    public String getPasswordDbEncrypted() { return passwordDbEncrypted; }
+
+    // ======================
+    // SETTERS
+    // ======================
+
+    public void setCedula(String cedula) { this.cedula = cedula; }
+    public void setCorreoInstitucional(String correoInstitucional) { this.correoInstitucional = correoInstitucional; }
+    public void setRol(String rol) { this.rol = rol; }
+    public void setUsername(String username) { this.username = username; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setNombres(String nombres) { this.nombres = nombres; }
+    public void setApellidos(String apellidos) { this.apellidos = apellidos; }
+    public void setRolAsignado(String rolAsignado) { this.rolAsignado = rolAsignado; }
+    public void setActivo(Boolean activo) { this.activo = activo; }
+    public void setRolSistema(RolSistema rolSistema) { this.rolSistema = rolSistema; }
+    public void setUsernameDb(String usernameDb) { this.usernameDb = usernameDb; }
+    public void setPasswordDbEncrypted(String passwordDbEncrypted) {
+        this.passwordDbEncrypted = passwordDbEncrypted;
+    }
+}

@@ -1,0 +1,65 @@
+<div class="importacion-sga">
+  <h2>Importación de datos del SGA</h2>
+  <p class="subtitle">Puente temporal mientras no exista una API real del SGA de la UTEQ.</p>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+
+  <div class="dropzones">
+    <div class="dropzone">
+      <h3>Pensum académico</h3>
+      <p class="hint">cedulaEstudiante, codigoAsignatura, nombreAsignatura, calificacion, estado, periodoAcademico</p>
+      <input type="file" accept=".csv,.xlsx,.xls" (change)="onArchivoSeleccionado('pensum', $event)" [disabled]="subiendo() === 'pensum'">
+      <p *ngIf="subiendo() === 'pensum'">Importando...</p>
+      <div class="resultado" *ngIf="resultados()['pensum'] as r">
+        <p class="stats">{{ r.filasOk }} OK / {{ r.filasError }} error(es) de {{ r.totalFilas }} filas</p>
+        <ul class="errores" *ngIf="r.errores.length">
+          <li *ngFor="let e of r.errores">{{ e }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="dropzone">
+      <h3>Requisitos (Art. 18)</h3>
+      <p class="hint">cedulaEstudiante, idiomaAprobado(S/N), practicasLaborales(S/N), horasPracticas, servicioComunitario(S/N), horasServicio</p>
+      <input type="file" accept=".csv,.xlsx,.xls" (change)="onArchivoSeleccionado('requisitos', $event)" [disabled]="subiendo() === 'requisitos'">
+      <p *ngIf="subiendo() === 'requisitos'">Importando...</p>
+      <div class="resultado" *ngIf="resultados()['requisitos'] as r">
+        <p class="stats">{{ r.filasOk }} OK / {{ r.filasError }} error(es) de {{ r.totalFilas }} filas</p>
+        <ul class="errores" *ngIf="r.errores.length">
+          <li *ngFor="let e of r.errores">{{ e }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="dropzone">
+      <h3>Deudas administrativas</h3>
+      <p class="hint">cedulaEstudiante, tipoDeuda, monto, estado</p>
+      <input type="file" accept=".csv,.xlsx,.xls" (change)="onArchivoSeleccionado('deudas', $event)" [disabled]="subiendo() === 'deudas'">
+      <p *ngIf="subiendo() === 'deudas'">Importando...</p>
+      <div class="resultado" *ngIf="resultados()['deudas'] as r">
+        <p class="stats">{{ r.filasOk }} OK / {{ r.filasError }} error(es) de {{ r.totalFilas }} filas</p>
+        <ul class="errores" *ngIf="r.errores.length">
+          <li *ngFor="let e of r.errores">{{ e }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="titulo-historial">Historial de importaciones</h3>
+  <table class="tabla-historial">
+    <thead>
+      <tr><th>Fecha</th><th>Tipo</th><th>Archivo</th><th>OK</th><th>Errores</th><th>Importado por</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let h of historial()">
+        <td>{{ h.fechaImportacion }}</td>
+        <td>{{ h.tipo }}</td>
+        <td>{{ h.nombreArchivo }}</td>
+        <td class="ok-count">{{ h.filasOk }}</td>
+        <td class="error-count" [class.hay]="h.filasError > 0">{{ h.filasError }}</td>
+        <td>{{ h.importadoPorNombre ?? '—' }}</td>
+      </tr>
+      <tr *ngIf="!historial().length"><td colspan="6" class="empty">Sin importaciones registradas todavía</td></tr>
+    </tbody>
+  </table>
+</div>

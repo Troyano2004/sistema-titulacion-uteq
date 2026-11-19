@@ -1,0 +1,118 @@
+
+<div class="shell">
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="brand" routerLink="/app/inicio">
+        <span class="brand-icon"><lucide-icon name="graduation-cap" [size]="20" [strokeWidth]="2" /></span>
+        <div class="brand-text">
+          <strong>Gestión del Proceso</strong>
+          <span>de Titulación</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="topbar-center">
+      <div class="search-box" [class.active]="searchFocused">
+        <lucide-icon name="search" [size]="15" [strokeWidth]="2" class="search-icon" />
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Buscar módulo..."
+          [(ngModel)]="searchQuery"
+          (focus)="searchFocused = true; updateSearchResults()"
+          (blur)="onSearchBlur()"
+          (input)="updateSearchResults()"
+          (keydown.enter)="navigateToFirst()"
+          (keydown.escape)="clearSearch()"
+          autocomplete="off"
+        />
+        <button
+          *ngIf="searchQuery"
+          class="search-clear"
+          type="button"
+          (mousedown)="$event.preventDefault()"
+          (click)="clearSearch()"
+        ><lucide-icon name="x" [size]="11" [strokeWidth]="2.5" /></button>
+
+        <div class="search-dropdown" *ngIf="searchFocused && searchResults.length > 0">
+          <a *ngFor="let result of searchResults"
+             class="search-result"
+             [routerLink]="result.path"
+             (mousedown)="$event.preventDefault()"
+             (click)="onResultClick()">
+            <span class="result-icon"><lucide-icon [name]="result.icon" [size]="16" [strokeWidth]="1.75" /></span>
+            <div class="result-info">
+              <span class="result-label">{{ result.label }}</span>
+              <span class="result-section">{{ result.section }}</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="search-dropdown search-empty"
+             *ngIf="searchFocused && searchQuery && searchResults.length === 0">
+          <span>Sin resultados para "{{ searchQuery }}"</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button
+        class="icon-button"
+        type="button"
+        (click)="toggleTheme()"
+        [title]="isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+      ><lucide-icon [name]="isDarkMode ? 'sun' : 'moon'" [size]="17" [strokeWidth]="1.9" /></button>
+      <button class="icon-button" type="button"><lucide-icon name="bell" [size]="17" [strokeWidth]="1.9" /></button>
+      <div class="avatar"
+           [class.clickable]="tieneVariosRoles"
+           [attr.role]="tieneVariosRoles ? 'button' : null"
+           [attr.tabindex]="tieneVariosRoles ? 0 : null"
+           [title]="tieneVariosRoles ? 'Filtrar menú por rol' : null"
+           (click)="toggleRoleMenu()"
+           (keydown.enter)="toggleRoleMenu()">
+        <span class="avatar-circle">{{ userInitials }}</span>
+        <div class="avatar-info">
+          <strong>{{ userName }}</strong>
+          <span>{{ userRole }}</span>
+        </div>
+        <lucide-icon *ngIf="tieneVariosRoles" name="chevron-down" [size]="14" [strokeWidth]="2" class="avatar-caret" />
+
+        <div class="role-menu" *ngIf="roleMenuOpen">
+          <div class="role-menu-header">Ver menú como</div>
+          <button type="button" class="role-option" [class.active]="activeRole === null" (click)="selectRole(null)">
+            <span>Todos mis roles</span>
+            <lucide-icon *ngIf="activeRole === null" name="check" [size]="14" [strokeWidth]="2.2" />
+          </button>
+          <button
+            *ngFor="let rol of misRoles"
+            type="button"
+            class="role-option"
+            [class.active]="activeRole === rol"
+            (click)="selectRole(rol)"
+          >
+            <span>{{ roleLabel(rol) }}</span>
+            <lucide-icon *ngIf="activeRole === rol" name="check" [size]="14" [strokeWidth]="2.2" />
+          </button>
+        </div>
+      </div>
+      <button class="logout" type="button" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="breadcrumb-bar">
+    <button class="volver-button" type="button" *ngIf="volverPath" [routerLink]="volverPath">
+      <lucide-icon name="arrow-left" [size]="14" [strokeWidth]="2.25" /> Volver
+    </button>
+    <nav class="breadcrumb-trail" aria-label="Ruta de navegación">
+      <ng-container *ngFor="let seg of breadcrumbSegments; let last = last">
+        <a *ngIf="seg.path" [routerLink]="seg.path">{{ seg.label }}</a>
+        <span *ngIf="!seg.path" class="current">{{ seg.label }}</span>
+        <span class="sep" *ngIf="!last"> / </span>
+      </ng-container>
+    </nav>
+  </div>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

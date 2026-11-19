@@ -1,0 +1,67 @@
+.expediente-estudiante {
+  padding: 24px; max-width: 1000px; margin: 0 auto;
+
+  h2 { margin: 0 0 16px; font-size: 1.4rem; }
+
+  .alert {
+    padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; font-size: .9rem;
+    &.error { background: #fff0f0; border-left: 4px solid #e53e3e; color: #c53030; }
+    &.ok    { background: #f0fff4; border-left: 4px solid #38a169; color: #276749; }
+  }
+  .loading { color: #666; padding: 8px 0; }
+
+  .creacion {
+    max-width: 460px; background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    .form-row {
+      margin-bottom: 14px;
+      label { display: block; font-size: .85rem; font-weight: 600; color: #4a5568; margin-bottom: 4px; }
+      input, select { width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; }
+    }
+    button { background: #0f7a3a; color: #fff; border: none; padding: 10px 22px; border-radius: 6px; cursor: pointer; }
+  }
+
+  .resumen {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    .badge {
+      padding: 3px 12px; border-radius: 14px; font-size: .72rem; font-weight: 700; color: #fff;
+      &.INCOMPLETO { background: #d69e2e; } &.COMPLETO { background: #38a169; }
+      &.VALIDADO { background: #3182ce; } &.LEGALIZADO { background: #2c5282; }
+    }
+    .modalidad { color: #718096; font-size: .85rem; }
+    .barra-progreso { flex: 1; min-width: 120px; height: 8px; background: #edf2f7; border-radius: 4px; overflow: hidden; }
+    .relleno { height: 100%; background: #38a169; transition: width .3s; }
+    .porcentaje { font-weight: 700; color: #2d3748; }
+  }
+
+  .tabla-documentos {
+    width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05); font-size: .85rem;
+    th, td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
+    th { background: #f7fafc; color: #718096; font-weight: 600; font-size: .72rem; text-transform: uppercase; }
+    .oblig { color: #e53e3e; margin-left: 3px; }
+    .motivo-rechazo { color: #c53030; font-size: .75rem; margin-top: 4px; }
+    .badge-doc {
+      padding: 2px 8px; border-radius: 4px; font-size: .7rem; font-weight: 700; color: #fff; background: #a0aec0;
+      &.PENDIENTE { background: #a0aec0; } &.CARGADO { background: #d69e2e; }
+      &.VALIDADO { background: #3182ce; } &.APROBADO { background: #38a169; } &.RECHAZADO { background: #e53e3e; }
+    }
+    .acciones {
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+      a { color: #3182ce; }
+      button, .btn-subir {
+        padding: 5px 12px; border-radius: 5px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; font-size: .78rem;
+      }
+    }
+  }
+}
+
+:host-context(body.dark-mode) .expediente-estudiante {
+  h2 { color: #f1f5f9; }
+  .resumen, .creacion { background: #1e293b; }
+  .resumen .modalidad { color: #94a3b8; }
+  .tabla-documentos { background: #1e293b; th { background: #0f172a; color: #94a3b8; } th, td { border-color: #334155; color: #e2e8f0; } }
+  .creacion .form-row label { color: #94a3b8; }
+  .creacion input, .creacion select { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+  .acciones button, .acciones .btn-subir { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+}

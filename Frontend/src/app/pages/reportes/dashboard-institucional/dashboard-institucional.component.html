@@ -1,0 +1,141 @@
+<section class="dashboard-institucional">
+  <header class="page-header">
+    <h1>Dashboard de reportes institucionales</h1>
+    <p class="subtitle">Métricas de titulación por periodo, modalidad y carrera.</p>
+  </header>
+
+  <div class="filtros">
+    <label>
+      Periodo
+      <select [(ngModel)]="periodoSeleccionado" (change)="aplicarFiltros()">
+        <option *ngFor="let p of periodos" [value]="p.descripcion">{{ p.descripcion }}</option>
+      </select>
+    </label>
+    <label>
+      Facultad
+      <select [(ngModel)]="facultadSeleccionada" (change)="aplicarFiltros()">
+        <option [ngValue]="undefined">Todas</option>
+        <option *ngFor="let f of facultades" [ngValue]="f.idFacultad">{{ f.nombre }}</option>
+      </select>
+    </label>
+    <label>
+      Carrera
+      <select [(ngModel)]="carreraSeleccionada" (change)="aplicarFiltros()">
+        <option [ngValue]="undefined">Todas</option>
+        <option *ngFor="let c of carrerasFiltradas" [ngValue]="c.idCarrera">{{ c.nombre }}</option>
+      </select>
+    </label>
+    <div class="acciones">
+      <button type="button" class="btn-secundario" (click)="exportarCsv()" [disabled]="!dashboard">Exportar CSV</button>
+      <button type="button" class="btn-primario" (click)="exportarPdf()" [disabled]="!facultadSeleccionada">Exportar PDF (por facultad)</button>
+    </div>
+  </div>
+
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+  <div class="alert info" *ngIf="cargando">Cargando…</div>
+
+  <ng-container *ngIf="dashboard as d">
+    <div class="kpis">
+      <div class="kpi">
+        <span class="valor">{{ d.totalMatriculados }}</span>
+        <span class="etiqueta">Matriculados</span>
+      </div>
+      <div class="kpi">
+        <span class="valor">{{ d.enProgreso }}</span>
+        <span class="etiqueta">En progreso</span>
+      </div>
+      <div class="kpi ok">
+        <span class="valor">{{ d.aprobados }}</span>
+        <span class="etiqueta">Aprobados</span>
+      </div>
+      <div class="kpi warn">
+        <span class="valor">{{ d.reprobados }}</span>
+        <span class="etiqueta">Reprobados</span>
+      </div>
+      <div class="kpi">
+        <span class="valor">{{ d.tasaAprobacion.toFixed(1) }}%</span>
+        <span class="etiqueta">Tasa de aprobación</span>
+      </div>
+      <div class="kpi">
+        <span class="valor">{{ d.promedioNotaGrado ?? '-' }}</span>
+        <span class="etiqueta">Promedio nota de grado</span>
+      </div>
+      <div class="kpi">
+        <span class="valor">{{ d.tiempoPromedioTitulacionDias ? (d.tiempoPromedioTitulacionDias | number:'1.0-0') + ' días' : '-' }}</span>
+        <span class="etiqueta">Tiempo promedio de titulación</span>
+      </div>
+    </div>
+
+    <section class="chart-card">
+      <h3>Aprobados vs reprobados ({{ d.periodo }})</h3>
+      <div class="bar-row">
+        <span class="bar-label">Aprobados</span>
+        <div class="bar-track"><div class="bar-fill ok" [style.width]="barWidth(d.aprobados, d.aprobados + d.reprobados)"></div></div>
+        <span class="bar-valor">{{ d.aprobados }}</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Reprobados</span>
+        <div class="bar-track"><div class="bar-fill warn" [style.width]="barWidth(d.reprobados, d.aprobados + d.reprobados)"></div></div>
+        <span class="bar-valor">{{ d.reprobados }}</span>
+      </div>
+    </section>
+
+    <section class="chart-card">
+      <h3>Distribución por modalidad</h3>
+      <div class="bar-row" *ngFor="let m of d.porModalidad">
+        <span class="bar-label">{{ m.modalidad }}</span>
+        <div class="bar-track"><div class="bar-fill" [style.width]="barWidth(m.total, d.totalMatriculados || m.total)"></div></div>
+        <span class="bar-valor">{{ m.total }} (A:{{ m.aprobados }} / R:{{ m.reprobados }})</span>
+      </div>
+      <p class="empty" *ngIf="!d.porModalidad.length">Sin datos para este periodo.</p>
+    </section>
+  </ng-container>
+
+  <section class="chart-card" *ngIf="facultadSeleccionada">
+    <h3>Tasa de aprobación por carrera — {{ nombreFacultad(facultadSeleccionada) }}</h3>
+    <div class="plazo" *ngIf="resultadosFacultad?.fechaLimitePlazoArt40 as limite"
+         [class.fuera]="!resultadosFacultad?.dentroDePlazo">
+      Plazo Art. 40 (8 días hábiles desde el último complexivo): límite {{ limite }}
+      — {{ resultadosFacultad?.dentroDePlazo ? 'dentro de plazo' : 'FUERA DE PLAZO' }}
+    </div>
+    <ng-container *ngIf="resultadosFacultad as rf; else sinFacultad">
+      <div class="bar-row" *ngFor="let c of rf.carreras">
+        <span class="bar-label">{{ c.carrera }}</span>
+        <div class="bar-track"><div class="bar-fill ok" [style.width]="c.tasaAprobacion + '%'"></div></div>
+        <span class="bar-valor">{{ c.tasaAprobacion.toFixed(1) }}% ({{ c.totalEstudiantes }} est.)</span>
+      </div>
+      <p class="empty" *ngIf="!rf.carreras.length">Sin resultados para esta facultad y periodo.</p>
+    </ng-container>
+    <ng-template #sinFacultad><p class="empty">Cargando resultados de la facultad…</p></ng-template>
+  </section>
+
+  <section class="chart-card" *ngIf="reporteExpedientes as re">
+    <h3>Estado de expedientes{{ re.carrera ? ' — ' + re.carrera : '' }}</h3>
+    <div class="bar-row">
+      <span class="bar-label">Incompletos</span>
+      <div class="bar-track"><div class="bar-fill warn" [style.width]="barWidth(re.incompletos, re.totalExpedientes)"></div></div>
+      <span class="bar-valor">{{ re.incompletos }}</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Completos</span>
+      <div class="bar-track"><div class="bar-fill" [style.width]="barWidth(re.completos, re.totalExpedientes)"></div></div>
+      <span class="bar-valor">{{ re.completos }}</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Validados</span>
+      <div class="bar-track"><div class="bar-fill ok" [style.width]="barWidth(re.validados, re.totalExpedientes)"></div></div>
+      <span class="bar-valor">{{ re.validados }}</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Legalizados</span>
+      <div class="bar-track"><div class="bar-fill ok" [style.width]="barWidth(re.legalizados, re.totalExpedientes)"></div></div>
+      <span class="bar-valor">{{ re.legalizados }}</span>
+    </div>
+    <div class="faltantes" *ngIf="re.documentosMasFaltantes.length">
+      <h4>Documentos más frecuentemente faltantes</h4>
+      <ol>
+        <li *ngFor="let f of re.documentosMasFaltantes">{{ f.documento }} — {{ f.vecesFaltante }}</li>
+      </ol>
+    </div>
+  </section>
+</section>

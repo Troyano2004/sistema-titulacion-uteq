@@ -1,0 +1,60 @@
+<div class="page">
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="title">Listado preliminar de selecciones</div>
+        <div class="subtitle">Estudiantes del antepenúltimo nivel y su opción de titulación seleccionada.</div>
+      </div>
+      <button class="btn ghost" (click)="exportarCsv()" [disabled]="!resultado || !totalEstudiantes">
+        Exportar CSV
+      </button>
+    </div>
+
+    <div class="filtros">
+      <div class="field">
+        <label>Carrera</label>
+        <select [(ngModel)]="idCarrera" name="idCarrera">
+          <option [ngValue]="null">-- Selecciona --</option>
+          <option *ngFor="let c of carreras" [ngValue]="c.idCarrera">{{ c.nombre }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Periodo académico</label>
+        <input type="text" [(ngModel)]="periodo" name="periodo" placeholder="2025-1" />
+      </div>
+      <button class="btn primary" (click)="buscar()" [disabled]="cargando">
+        {{ cargando ? 'Buscando...' : 'Buscar' }}
+      </button>
+    </div>
+
+    <div class="alert error" *ngIf="mensajeError">{{ mensajeError }}</div>
+
+    <div class="resumen" *ngIf="resultado">
+      <span>{{ resultado.nombreCarrera }}</span>
+      <span>Antepenúltimo nivel: {{ resultado.nivelAntepenultimo }}</span>
+      <span>Total: {{ totalEstudiantes }} estudiante(s)</span>
+    </div>
+
+    <div class="grupo" *ngFor="let grupo of resultado?.grupos">
+      <div class="grupo-header">
+        {{ grupo.opcionTitulacion }}
+        <span class="count">{{ grupo.estudiantes.length }}</span>
+      </div>
+      <table class="tabla" *ngIf="grupo.estudiantes.length">
+        <thead>
+          <tr><th>Cédula</th><th>Estudiante</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of grupo.estudiantes">
+            <td>{{ e.cedula || '-' }}</td>
+            <td>{{ e.nombreCompleto || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="empty" *ngIf="resultado && !totalEstudiantes">
+      No hay estudiantes en el antepenúltimo nivel para esta carrera.
+    </div>
+  </section>
+</div>

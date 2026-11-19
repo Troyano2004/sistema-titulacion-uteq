@@ -1,0 +1,121 @@
+package com.erwin.backend.controller;
+
+import com.erwin.backend.dtos.*;
+import com.erwin.backend.dtos.CoordinadorDto.*;
+import com.erwin.backend.entities.ComisionProyecto;
+import com.erwin.backend.service.CoordinadorService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/coordinador")
+@CrossOrigin(origins = "http://localhost:4200")
+@PreAuthorize("hasAnyRole('ADMIN','COORDINADOR')")
+public class CoordinadorController {
+    private final CoordinadorService service;
+
+    public CoordinadorController(CoordinadorService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/seguimiento")
+    public List<SeguimientoProyectoDto> seguimiento() {
+        return service.seguimiento();
+    }
+
+    @GetMapping("/directores/sin-asignar")
+    public List<EstudianteSinDirectorDto> sinDirector() {
+        return service.estudiantesSinDirector();
+    }
+
+    @GetMapping("/directores/carga")
+    public List<DirectorCargaDto> cargaDirectores() {
+        return service.cargaDirectores();
+    }
+
+    @PostMapping("/directores/asignar")
+    public void asignarDirector(@RequestBody AsignarDirectorRequest request) {
+        service.asignarDirector(request);
+    }
+
+    @PostMapping("/validacion/{idProyecto}")
+    public void validarProyecto(@PathVariable Integer idProyecto) {
+        service.validarProyecto(idProyecto);
+    }
+
+    @GetMapping("/observaciones")
+    public List<ObservacionAdministrativaDto> observaciones(@RequestParam(required = false) Integer idProyecto) {
+        return service.observaciones(idProyecto);
+    }
+
+    @GetMapping("/proyecto/{idProyecto}/documento")
+    public DocumentoTitulacionDto documentoProyecto(@PathVariable Integer idProyecto) {
+        return service.documentoPorProyecto(idProyecto);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/observaciones")
+    public ObservacionAdministrativaDto crearObservacion(@RequestBody CrearObservacionAdministrativaRequest request) {
+        return service.crearObservacion(request);
+    }
+
+    @GetMapping("/comisiones")
+    public List<ComisionFormativaDto> comisiones() {
+        return service.listarComisiones();
+    }
+
+    @GetMapping("/catalogos/carreras")
+    public List<CatalogoCarreraDto> carreras() {
+        return service.carreras();
+    }
+
+    @DeleteMapping("/comisiones/{idComision}")
+    public void eliminarComision(@PathVariable Integer idComision) {
+        service.eliminarComision(idComision);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/comisiones")
+    public ComisionFormativaDto crearComision(@RequestBody CrearComisionRequest request) {
+        return service.crearComision(request);
+    }
+
+    @PostMapping("/comisiones/{idComision}/miembros")
+    public void asignarMiembros(@PathVariable Integer idComision,
+                                @RequestBody AsignarMiembrosRequest request) {
+        service.asignarMiembros(idComision, request);
+    }
+
+    @PostMapping("/comisiones/asignar-proyecto")
+    public void asignarComisionProyecto(@RequestBody AsignarComisionProyectoRequest request) {
+        service.asignarComisionAProyecto(request);
+    }
+
+    @GetMapping("/comisiones/proyecto/{idProyecto}")
+    public ComisionProyecto comisionPorProyecto(@PathVariable Integer idProyecto) {
+        return service.comisionPorProyecto(idProyecto)
+                .orElseThrow(() -> new EntityNotFoundException("Comisión no encontrada"));
+    }
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/dt1/asignaciones")
+    public Dt1AsignacionResponse crearAsignacionDt1(@RequestBody Dt1AsignacionCreateRequest req) {
+        return service.crearAsignacionDt1(req);
+    }
+    @PostMapping("/dt1/tutores/asignar")
+    public Dt1AsignarTutorResponse asignarTutorDt1(@RequestBody Dt1AsignarTutorRequest req) {
+        return service.asignarTutorDt1(req);
+    }
+
+    @GetMapping("/dt1/informacion-academica")
+    public InformacionAcademicaDt1Dto obtenerInformacionAcademica(
+            @RequestParam Integer idUsuario) {
+
+        return service.infoDt1(idUsuario);
+    }
+
+
+}

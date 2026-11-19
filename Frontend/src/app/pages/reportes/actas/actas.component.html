@@ -1,0 +1,34 @@
+<div class="rep-container">
+  <h2>Actas y Constancias</h2>
+
+  <div class="card-reporte">
+    <div class="card-header">
+      <span class="icono">&#128221;</span>
+      <div>
+        <h3>Actas y Constancias</h3>
+        <p>Actas de tutorias y sustentaciones por proyecto.</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <label>Estudiante</label>
+      <button type="button" class="btn-seleccionar" (click)="selector.abrir()">
+        <span *ngIf="!estudianteElegido">&#128269; Seleccionar estudiante</span>
+        <span *ngIf="estudianteElegido">{{ estudianteElegido.nombreCompleto }} &middot; {{ estudianteElegido.cedula }}</span>
+      </button>
+
+      <div *ngIf="buscandoProyecto" class="ayuda-msg">Buscando su proyecto de titulación...</div>
+      <div *ngIf="!buscandoProyecto && errorProyecto" class="error-msg">{{ errorProyecto }}</div>
+      <div *ngIf="!buscandoProyecto && proyectoTitulo" class="ayuda-msg">Proyecto: {{ proyectoTitulo }}</div>
+    </div>
+    <div class="card-actions">
+      <button (click)="actasTutoria()" [disabled]="!proyectoIdActas" class="btn-pdf">
+        &#128196; Actas de Tutorias PDF
+      </button>
+      <button (click)="actasSustentacion()" [disabled]="!proyectoIdActas" class="btn-pdf btn-azul">
+        &#128196; Actas de Sustentacion PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-selector-estudiante #selector (seleccionar)="onEstudianteSeleccionado($event)" />

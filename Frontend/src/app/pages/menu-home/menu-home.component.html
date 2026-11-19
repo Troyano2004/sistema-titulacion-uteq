@@ -1,0 +1,17 @@
+<section class="menu-home">
+  <header class="menu-home-header">
+    <h1>Menú principal</h1>
+    <p>Selecciona un módulo para ver sus opciones.</p>
+  </header>
+
+  <div class="grid">
+    <button type="button" class="card" *ngFor="let section of sections()" (click)="abrir(section)">
+      <span class="icon"><lucide-icon [name]="section.icon" [size]="26" [strokeWidth]="1.75" /></span>
+      <span class="title">{{ section.title }}</span>
+      <span class="description" *ngIf="section.description">{{ section.description }}</span>
+      <span class="count">{{ section.items.length }} {{ section.items.length === 1 ? 'opción' : 'opciones' }}</span>
+    </button>
+  </div>
+
+  <p class="empty" *ngIf="!sections().length">No tienes módulos disponibles todavía.</p>
+</section>

@@ -1,0 +1,67 @@
+<div class="panel-incorporacion">
+  <h2>Incorporación y Registro de Títulos</h2>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+  <div class="alert ok" *ngIf="ok()">{{ ok() }}</div>
+
+  <div class="filtros">
+    <select [(ngModel)]="filtroFacultad" (ngModelChange)="cargar()">
+      <option [ngValue]="null">-- Todas las facultades --</option>
+      <option *ngFor="let f of facultades()" [ngValue]="f.idFacultad">{{ f.nombre }}</option>
+    </select>
+  </div>
+
+  <div class="loading" *ngIf="loading()">Cargando...</div>
+
+  <div class="layout">
+    <div class="lista">
+      <div class="fila" *ngFor="let p of pendientes()" [class.activa]="seleccionado()?.idActa === p.idActa" (click)="seleccionar(p)">
+        <div class="nombre">{{ p.nombreEstudiante }}</div>
+        <div class="carrera">{{ p.nombreCarrera }}</div>
+        <span class="badge" [class]="p.estado">{{ p.estado }}</span>
+        <div class="firmas">
+          <span [class.ok]="p.firmaRector">R</span>
+          <span [class.ok]="p.firmaDecano">D</span>
+          <span [class.ok]="p.firmaSecretarioGeneral">SG</span>
+        </div>
+      </div>
+      <p class="empty" *ngIf="!pendientes().length && !loading()">No hay expedientes pendientes de incorporación.</p>
+    </div>
+
+    <div class="detalle" *ngIf="actaDetalle() as acta">
+      <h3>{{ seleccionado()?.nombreEstudiante }}</h3>
+      <p class="notas">Récord: {{ acta.promedioRecordAcademico }} — Titulación: {{ acta.notaTitulacion }} — <strong>Nota final: {{ acta.notaFinalGrado }}</strong></p>
+      <p class="estado-actual">Estado: <span class="badge" [class]="acta.estado">{{ acta.estado }}</span></p>
+
+      <div class="firmas-detalle" *ngIf="acta.estado !== 'REGISTRADA_SENESCYT'">
+        <h4>Firmas</h4>
+        <button type="button" [disabled]="acta.firmaRector" (click)="firmar('RECTOR')">{{ acta.firmaRector ? '✔ Rector' : 'Firmar — Rector' }}</button>
+        <button type="button" [disabled]="acta.firmaDecano" (click)="firmar('DECANO')">{{ acta.firmaDecano ? '✔ Decano' : 'Firmar — Decano' }}</button>
+        <button type="button" [disabled]="acta.firmaSecretarioGeneral" (click)="firmar('SECRETARIO_GENERAL')">{{ acta.firmaSecretarioGeneral ? '✔ Secretario General' : 'Firmar — Secretario General' }}</button>
+      </div>
+
+      <div class="ceremonia">
+        <h4>Ceremonia de incorporación</h4>
+        <input type="date" [(ngModel)]="fechaCeremoniaNueva">
+        <button type="button" (click)="programarCeremonia()">Programar</button>
+        <span class="fecha-actual" *ngIf="acta.fechaCeremonia">Programada: {{ acta.fechaCeremonia }}</span>
+      </div>
+
+      <div class="titulo-seccion" *ngIf="acta.estado === 'FIRMADA' || acta.estado === 'REGISTRADA_SENESCYT'">
+        <h4>Título profesional</h4>
+        <ng-container *ngIf="!titulo()">
+          <input type="text" [(ngModel)]="numeroTituloNuevo" placeholder="Número de título">
+          <button type="button" (click)="emitirTitulo()">Emitir título</button>
+        </ng-container>
+        <ng-container *ngIf="titulo() as t">
+          <p>Número: <strong>{{ t.numeroTitulo }}</strong> — Emitido: {{ t.fechaEmision }}</p>
+          <ng-container *ngIf="t.estado === 'EMITIDO'">
+            <input type="text" [(ngModel)]="registroSenescytNuevo" placeholder="N.° de registro SENESCYT">
+            <button type="button" (click)="registrarSenescyt()">Registrar SENESCYT</button>
+          </ng-container>
+          <p *ngIf="t.estado === 'REGISTRADO'" class="registrado">✔ Registrado en SENESCYT: {{ t.registroSenescyt }} ({{ t.fechaRegistroSenescyt }})</p>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

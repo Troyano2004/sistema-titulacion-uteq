@@ -1,0 +1,115 @@
+<div class="gestion-complexivo">
+  <h2>Gestión del Examen Complexivo</h2>
+  <p class="subtitle">Programación, delegados, resultados y fraude académico.</p>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+  <div class="alert ok" *ngIf="ok()">{{ ok() }}</div>
+
+  <div class="tabs">
+    <button type="button" [class.active]="tab() === 'programar'" (click)="setTab('programar')">Programar</button>
+    <button type="button" [class.active]="tab() === 'delegados'" (click)="setTab('delegados')">Delegados</button>
+    <button type="button" [class.active]="tab() === 'resultados'" (click)="setTab('resultados')">Resultados</button>
+    <button type="button" [class.active]="tab() === 'fraude'" (click)="setTab('fraude')">Fraude académico</button>
+  </div>
+
+  <!-- Programar -->
+  <form [formGroup]="formProgramar" (ngSubmit)="programar()" *ngIf="tab() === 'programar'">
+    <div class="form-row-grid">
+      <div class="form-row">
+        <label>ID del estudiante</label>
+        <input type="number" formControlName="idEstudiante">
+      </div>
+      <div class="form-row">
+        <label>Tipo de examen</label>
+        <select formControlName="tipo">
+          <option value="FINAL">Final</option>
+          <option value="SUPLETORIO">Supletorio</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Fecha programada</label>
+        <input type="date" formControlName="fechaProgramada">
+      </div>
+    </div>
+    <button type="submit" [disabled]="loading()">Programar examen</button>
+  </form>
+
+  <!-- Delegados -->
+  <div *ngIf="tab() === 'delegados'">
+    <div class="form-row-grid">
+      <div class="form-row">
+        <label>ID del examen a asignar</label>
+        <input type="number" [(ngModel)]="idExamenDelegado" [ngModelOptions]="{standalone: true}">
+      </div>
+      <div class="form-row">
+        <label>Carrera del estudiante</label>
+        <input type="number" [(ngModel)]="idCarreraEstudianteDelegado" [ngModelOptions]="{standalone: true}"
+               placeholder="ID de carrera">
+      </div>
+      <div class="form-row">
+        <button type="button" (click)="buscarDelegadosDisponibles()">Buscar delegados disponibles</button>
+      </div>
+    </div>
+
+    <table class="tabla" *ngIf="delegados().length">
+      <thead><tr><th></th><th>Docente</th><th>Carrera</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let d of delegados()">
+          <td><input type="radio" name="delegado" [value]="d.idDocente" [(ngModel)]="idDocenteSeleccionado" [ngModelOptions]="{standalone: true}"></td>
+          <td>{{ d.nombreDocente }}</td>
+          <td>{{ d.nombreCarrera }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="empty" *ngIf="!delegados().length">Sin resultados — busca por carrera del estudiante.</p>
+
+    <button type="button" class="btn-primary" (click)="asignarDelegado()" [disabled]="loading()">Asignar delegado</button>
+  </div>
+
+  <!-- Resultados -->
+  <div *ngIf="tab() === 'resultados'">
+    <div class="form-row-grid">
+      <div class="form-row">
+        <label>ID del estudiante</label>
+        <input type="number" [(ngModel)]="idEstudianteConsulta" [ngModelOptions]="{standalone: true}">
+      </div>
+      <div class="form-row">
+        <button type="button" (click)="buscarExamenesEstudiante()">Buscar</button>
+      </div>
+    </div>
+
+    <table class="tabla" *ngIf="examenesEstudiante().length">
+      <thead>
+        <tr><th>ID</th><th>Tipo</th><th>Fecha</th><th>Estado</th><th>Calificación</th><th>Delegado</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of examenesEstudiante()">
+          <td>{{ e.id }}</td>
+          <td>{{ e.tipo }}</td>
+          <td>{{ e.fechaProgramada }}</td>
+          <td><span class="badge" [class]="e.estado">{{ e.estado }}</span></td>
+          <td>{{ e.calificacion ?? '—' }}</td>
+          <td>{{ e.nombreDelegado ?? '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="empty" *ngIf="!examenesEstudiante().length">Sin exámenes para mostrar.</p>
+  </div>
+
+  <!-- Fraude -->
+  <form [formGroup]="formFraude" (ngSubmit)="registrarFraude()" *ngIf="tab() === 'fraude'">
+    <div class="form-row">
+      <label>ID del examen</label>
+      <input type="number" [(ngModel)]="idExamenFraude" [ngModelOptions]="{standalone: true}">
+    </div>
+    <div class="form-row">
+      <label>Descripción del incidente</label>
+      <textarea formControlName="descripcionIncidente" rows="3"></textarea>
+    </div>
+    <div class="form-row">
+      <label>Evidencia (opcional)</label>
+      <input type="text" formControlName="evidencia" placeholder="Referencia a foto/documento">
+    </div>
+    <button type="submit" class="btn-danger" [disabled]="loading()">Anular examen por fraude</button>
+  </form>
+</div>

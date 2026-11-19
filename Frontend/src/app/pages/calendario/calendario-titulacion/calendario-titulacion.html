@@ -1,0 +1,74 @@
+<div class="calendario-titulacion">
+  <h2>Calendario de Titulación</h2>
+  <p class="subtitle">Exámenes complexivos, predefensas, sustentaciones y plazos institucionales.</p>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+  <div class="alert ok" *ngIf="ok()">{{ ok() }}</div>
+
+  <div class="filtros">
+    <div class="form-row">
+      <label>Periodo</label>
+      <select [(ngModel)]="idPeriodoSeleccionado" (ngModelChange)="onFiltroChange()">
+        <option [ngValue]="null">-- Todos --</option>
+        <option *ngFor="let p of periodos()" [ngValue]="p.idPeriodo">{{ p.descripcion }}</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Facultad</label>
+      <select [(ngModel)]="idFacultadSeleccionada" (ngModelChange)="onFiltroChange()">
+        <option [ngValue]="null">-- Todas --</option>
+        <option *ngFor="let f of facultades()" [ngValue]="f.idFacultad">{{ f.nombre }}</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Tipo de evento</label>
+      <select [(ngModel)]="filtroTipo">
+        <option value="">-- Todos --</option>
+        <option *ngFor="let t of tiposDisponibles" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="aval-panel" *ngIf="idPeriodoSeleccionado">
+    <div class="aval-estado" [class.avalado]="aval()?.avalUnidadRegistro" [class.pendiente]="!aval()?.avalUnidadRegistro">
+      <ng-container *ngIf="aval() as a">
+        <span *ngIf="a.avalUnidadRegistro">✔ Aval de Unidad de Registro otorgado por {{ a.avaladoPor }} el {{ a.fechaAval }}</span>
+        <span *ngIf="!a.avalUnidadRegistro">⚠ Este periodo todavía no tiene el aval de Unidad de Registro — no se pueden programar actividades</span>
+      </ng-container>
+    </div>
+    <button type="button" *ngIf="puedeGestionarAval && !aval()?.avalUnidadRegistro" (click)="darAval()">
+      Dar aval de Unidad de Registro
+    </button>
+  </div>
+
+  <div class="loading" *ngIf="loading()">Cargando eventos...</div>
+
+  <div class="leyenda">
+    <span class="chip" *ngFor="let t of tiposDisponibles" [style.background]="colorDeTipo(t)">{{ t }}</span>
+  </div>
+
+  <div class="lista-eventos" *ngIf="!loading()">
+    <div class="evento-row" *ngFor="let e of eventosFiltrados" [style.border-left-color]="colorDeTipo(e.tipoEvento)"
+         (click)="verDetalle(e)">
+      <div class="fecha">{{ e.fecha }}<span *ngIf="e.hora"> — {{ e.hora }}</span></div>
+      <div class="tipo" [style.background]="colorDeTipo(e.tipoEvento)">{{ e.tipoEvento }}</div>
+      <div class="descripcion">{{ e.descripcion }}</div>
+      <div class="carrera" *ngIf="e.nombreCarrera">{{ e.nombreCarrera }}</div>
+    </div>
+    <p class="empty" *ngIf="!eventosFiltrados.length">No hay eventos para los filtros seleccionados.</p>
+  </div>
+
+  <!-- Modal detalle -->
+  <div class="modal-overlay" *ngIf="eventoSeleccionado() as e" (click)="cerrarDetalle()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3 [style.color]="colorDeTipo(e.tipoEvento)">{{ e.tipoEvento }}</h3>
+      <p><strong>Fecha:</strong> {{ e.fecha }} <span *ngIf="e.hora">— {{ e.hora }}</span></p>
+      <p *ngIf="e.lugar"><strong>Lugar:</strong> {{ e.lugar }}</p>
+      <p><strong>Descripción:</strong> {{ e.descripcion }}</p>
+      <p *ngIf="e.nombreCarrera"><strong>Carrera:</strong> {{ e.nombreCarrera }}</p>
+      <p *ngIf="e.estudiantes.length"><strong>Estudiantes:</strong> {{ e.estudiantes.join(', ') }}</p>
+      <p *ngIf="e.docentes.length"><strong>Docentes:</strong> {{ e.docentes.join(', ') }}</p>
+      <button type="button" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>

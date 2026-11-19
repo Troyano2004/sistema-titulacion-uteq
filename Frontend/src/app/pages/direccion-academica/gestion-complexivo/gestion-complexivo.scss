@@ -1,0 +1,67 @@
+.gestion-complexivo {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  h2 { margin: 0 0 4px; font-size: 1.4rem; }
+  .subtitle { color: #666; margin: 0 0 20px; font-size: .85rem; }
+
+  .alert {
+    padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; font-size: .9rem;
+    &.error { background: #fff0f0; border-left: 4px solid #e53e3e; color: #c53030; }
+    &.ok    { background: #f0fff4; border-left: 4px solid #38a169; color: #276749; }
+  }
+
+  .tabs {
+    display: flex; gap: 4px; margin-bottom: 20px;
+    button {
+      padding: 8px 16px; border: 1px solid #e2e8f0; background: #f7fafc;
+      border-radius: 6px 6px 0 0; cursor: pointer; font-size: .85rem;
+      &.active { background: #fff; border-bottom-color: #fff; font-weight: 600; color: #3182ce; }
+    }
+  }
+
+  .form-row {
+    margin-bottom: 14px;
+    label { display: block; font-size: .85rem; font-weight: 600; color: #4a5568; margin-bottom: 4px; }
+    input, select, textarea {
+      width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;
+      font-size: .9rem; box-sizing: border-box; font-family: inherit;
+    }
+  }
+  .form-row-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: end; }
+
+  button[type=submit], .btn-primary {
+    background: #0f7a3a; color: #fff; border: none; padding: 10px 24px;
+    border-radius: 6px; cursor: pointer; font-size: .9rem; margin-top: 4px;
+  }
+  .btn-danger {
+    background: #c53030; color: #fff; border: none; padding: 10px 24px;
+    border-radius: 6px; cursor: pointer; font-size: .9rem; margin-top: 4px;
+  }
+
+  .tabla {
+    width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .85rem;
+    th, td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+    th { color: #718096; font-weight: 600; font-size: .75rem; text-transform: uppercase; }
+    .badge {
+      padding: 2px 8px; border-radius: 4px; font-size: .7rem; font-weight: 600; color: #fff; background: #718096;
+      &.PROGRAMADO { background: #d69e2e; }
+      &.EN_CURSO { background: #3182ce; }
+      &.FINALIZADO { background: #38a169; }
+      &.ANULADO { background: #c53030; }
+      &.NO_PRESENTADO { background: #a0aec0; }
+    }
+  }
+  .empty { color: #999; font-size: .9rem; padding: 12px 0; }
+}
+
+:host-context(body.dark-mode) .gestion-complexivo {
+  h2 { color: #f1f5f9; }
+  .subtitle { color: #94a3b8; }
+  .tabs button { background: #0f172a; border-color: #334155; color: #94a3b8; &.active { background: #1e293b; color: #60a5fa; } }
+  .form-row label { color: #94a3b8; }
+  .form-row input, .form-row select, .form-row textarea { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+  .tabla { th { color: #94a3b8; } th, td { border-color: #334155; color: #e2e8f0; } }
+  .empty { color: #64748b; }
+}

@@ -1,0 +1,16 @@
+<section class="menu-section" *ngIf="section() as sec">
+  <header class="menu-section-header">
+    <span class="icon"><lucide-icon [name]="sec.icon" [size]="26" [strokeWidth]="1.75" /></span>
+    <div>
+      <h1>{{ sec.title }}</h1>
+      <p *ngIf="sec.description">{{ sec.description }}</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <a class="card" *ngFor="let item of sec.items" [routerLink]="item.path">
+      <span class="title">{{ item.label }}</span>
+      <lucide-icon name="chevron-right" [size]="18" [strokeWidth]="2" class="chevron" />
+    </a>
+  </div>
+</section>

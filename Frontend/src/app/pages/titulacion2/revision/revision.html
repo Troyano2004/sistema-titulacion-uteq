@@ -1,0 +1,81 @@
+<div class="revision-container">
+  <!-- Encabezado -->
+  <header class="revision-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="header-title">Revisión de Documentos</h1>
+        <p class="header-subtitle">Panel de director - Documentos pendientes de revisión</p>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-secondary" (click)="cargar()" [disabled]="loading()">
+          <span class="btn-icon">↻</span>
+          Recargar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mensaje de error -->
+  <div class="error-banner" *ngIf="error() as msg">
+    <span class="error-icon">⚠</span>
+    <span class="error-text">{{ msg }}</span>
+  </div>
+
+  <!-- Estado vacío -->
+  <div class="empty-state" *ngIf="pendientes().length === 0 && !loading()">
+    <div class="empty-icon">📋</div>
+    <h3 class="empty-title">No hay documentos pendientes</h3>
+    <p class="empty-text">Todos los documentos han sido revisados</p>
+  </div>
+
+  <!-- Lista de documentos -->
+  <div class="documents-grid" *ngIf="pendientes().length > 0">
+    <div class="document-card" *ngFor="let d of pendientes()">
+      <div class="card-header">
+        <div class="card-badge-row">
+          <span class="document-id">Doc. #{{ d.id }}</span>
+          <span class="badge" [ngClass]="{
+            'badge-revision': d.estado === 'EN_REVISION',
+            'badge-correccion': d.estado === 'CORRECCION_REQUERIDA',
+            'badge-aprobado': d.estado === 'APROBADO_POR_DIRECTOR'
+          }">{{ d.estado | titlecase }}</span>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <h3 class="document-title">{{ d.titulo || 'Sin título' }}</h3>
+
+        <div class="document-meta">
+
+          <!-- Estudiante -->
+          <div class="meta-item">
+            <span class="meta-icon">👤</span>
+            <div class="meta-content">
+              <span class="meta-label">Estudiante</span>
+              <span class="meta-value">{{ d.nombreEstudiante || 'ID ' + d.idEstudiante }}</span>
+              <span class="meta-sub" *ngIf="d.carrera">{{ d.carrera }}</span>
+            </div>
+          </div>
+
+          <!-- Fecha de envío -->
+          <div class="meta-item" *ngIf="d.fechaEnvio">
+            <span class="meta-icon">📅</span>
+            <div class="meta-content">
+              <span class="meta-label">Fecha de envío</span>
+              <span class="meta-value">{{ d.fechaEnvio | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <a
+        [routerLink]="['/app/titulacion2/revisar', d.id]"
+        [queryParams]="{ idEstudiante: d.idEstudiante }"
+      >
+        Revisar
+      </a>
+
+    </div>
+  </div>
+</div>

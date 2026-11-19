@@ -1,0 +1,65 @@
+<div class="expediente-estudiante">
+  <h2>Mi Expediente Digital</h2>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+  <div class="alert ok" *ngIf="ok()">{{ ok() }}</div>
+  <div class="loading" *ngIf="loading()">Cargando...</div>
+
+  <!-- Sin expediente aún -->
+  <div class="creacion" *ngIf="!loading() && !expediente()">
+    <p>Todavía no tienes un expediente creado.</p>
+    <div class="form-row">
+      <label>Modalidad</label>
+      <select [(ngModel)]="modalidadNueva">
+        <option value="TIC">Trabajo de Integración Curricular (TIC)</option>
+        <option value="COMPLEXIVO">Examen Complexivo</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Periodo de titulación</label>
+      <input type="text" [(ngModel)]="periodoNuevo" placeholder="ej. 2025-2025">
+    </div>
+    <button type="button" (click)="crearExpediente()">Crear expediente</button>
+  </div>
+
+  <!-- Expediente existente -->
+  <ng-container *ngIf="expediente() as exp">
+    <div class="resumen">
+      <span class="badge" [class]="exp.estado">{{ exp.estado }}</span>
+      <span class="modalidad">{{ exp.modalidad }} — {{ exp.periodoTitulacion }}</span>
+      <div class="barra-progreso">
+        <div class="relleno" [style.width.%]="progreso()"></div>
+      </div>
+      <span class="porcentaje">{{ progreso() }}%</span>
+    </div>
+
+    <table class="tabla-documentos">
+      <thead>
+        <tr><th>Código</th><th>Documento</th><th>Responsable</th><th>Estado</th><th>Acciones</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of exp.documentos">
+          <td>{{ d.codigo }}</td>
+          <td>
+            {{ d.nombre }}<span class="oblig" *ngIf="d.obligatorio">*</span>
+            <div class="motivo-rechazo" *ngIf="d.estado === 'RECHAZADO' && d.motivoRechazo">
+              Motivo: {{ d.motivoRechazo }}
+            </div>
+          </td>
+          <td>{{ d.responsable }}</td>
+          <td><span class="badge-doc" [class]="d.estado">{{ d.estado }}</span></td>
+          <td class="acciones">
+            <a *ngIf="d.archivoUrl" [href]="d.archivoUrl" target="_blank">Ver</a>
+            <button type="button" *ngIf="esGenerable(d)" (click)="generar(d)" [disabled]="generandoCodigo() === d.codigo">
+              {{ generandoCodigo() === d.codigo ? 'Generando...' : 'Generar PDF' }}
+            </button>
+            <label class="btn-subir" *ngIf="!esGenerable(d)">
+              {{ subiendoId() === d.id ? 'Subiendo...' : 'Subir archivo' }}
+              <input type="file" accept="application/pdf" (change)="subirArchivo(d, $event)" [disabled]="subiendoId() === d.id" hidden>
+            </label>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+</div>

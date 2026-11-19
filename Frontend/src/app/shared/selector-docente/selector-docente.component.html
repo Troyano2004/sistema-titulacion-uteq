@@ -1,0 +1,49 @@
+<div class="sel-overlay" *ngIf="abierto()" (click)="cerrar()">
+  <div class="sel-card" (click)="$event.stopPropagation()">
+    <div class="sel-header">
+      <h3>Seleccionar docente</h3>
+      <button type="button" class="sel-cerrar" (click)="cerrar()" aria-label="Cerrar">&times;</button>
+    </div>
+
+    <div class="sel-filtros">
+      <div class="sel-busqueda">
+        <span class="sel-busqueda-icono">&#128269;</span>
+        <input
+          type="text"
+          placeholder="Buscar por nombre o cédula..."
+          [(ngModel)]="texto"
+        />
+      </div>
+    </div>
+
+    <div class="sel-lista">
+      <div *ngIf="cargando()" class="sel-estado">Cargando docentes...</div>
+
+      <div *ngIf="!cargando() && error()" class="sel-estado sel-error">
+        {{ error() }}
+        <button type="button" class="sel-reintentar" (click)="reintentar()">Reintentar</button>
+      </div>
+
+      <div *ngIf="!cargando() && !error() && resultados.length === 0" class="sel-estado">
+        No se encontraron docentes con ese filtro.
+      </div>
+
+      <button
+        type="button"
+        class="sel-fila"
+        *ngFor="let d of resultados"
+        (click)="elegir(d)"
+      >
+        <span class="sel-avatar">{{ d.nombreCompleto.charAt(0) }}</span>
+        <span class="sel-info">
+          <span class="sel-nombre">{{ d.nombreCompleto }}</span>
+          <span class="sel-detalle">{{ d.cedula || 'Sin cédula' }}</span>
+        </span>
+      </button>
+    </div>
+
+    <div class="sel-footer">
+      <span>{{ resultados.length }} resultado(s)</span>
+    </div>
+  </div>
+</div>

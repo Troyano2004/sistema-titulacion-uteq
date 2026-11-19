@@ -1,0 +1,190 @@
+<div class="documento-container">
+  <header class="documento-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="header-title">Documento de Titulación</h1>
+        <p class="header-subtitle">Gestión y revisión de documentos</p>
+      </div>
+
+      <div class="header-right">
+        <span class="badge" [ngClass]="{
+          'badge-borrador': estado() === 'BORRADOR',
+          'badge-revision': estado() === 'EN_REVISION',
+          'badge-correccion': estado() === 'CORRECCION_REQUERIDA',
+          'badge-aprobado': estado() === 'APROBADO_POR_DIRECTOR'
+        }">
+          {{ estado() }}
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <div class="action-bar">
+    <div class="action-buttons">
+      <button class="btn btn-secondary" type="button" (click)="cargar()" [disabled]="loading()">
+        <span class="btn-icon">↻</span>
+        Recargar
+      </button>
+
+      <button class="btn btn-primary" type="button" (click)="guardar()" [disabled]="loading() || !puedeEditar()">
+        <span class="btn-icon">✓</span>
+        Guardar
+      </button>
+
+      <button class="btn btn-accent" type="button" (click)="enviarRevision()" [disabled]="loading() || !puedeEditar()">
+        <span class="btn-icon">→</span>
+        Enviar a revisión
+      </button>
+    </div>
+  </div>
+
+  <div class="error-banner" *ngIf="error() as msg">
+    <span class="error-icon">⚠</span>
+    <span class="error-text">{{ msg }}</span>
+  </div>
+
+  <nav class="tabs-nav">
+    <button class="tab-pill" type="button" [class.active]="activeTab()==='portada'" (click)="setTab('portada')">Portada</button>
+    <button class="tab-pill" type="button" [class.active]="activeTab()==='resumen'" (click)="setTab('resumen')">Resumen/Abstract</button>
+    <button class="tab-pill" type="button" [class.active]="activeTab()==='introduccion'" (click)="setTab('introduccion')">Introducción</button>
+    <button class="tab-pill" type="button" [class.active]="activeTab()==='marco_metodo'" (click)="setTab('marco_metodo')">Marco/Metodología</button>
+    <button class="tab-pill" type="button" [class.active]="activeTab()==='resultados'" (click)="setTab('resultados')">Resultados/Discusión</button>
+    <button class="tab-pill" type="button" [class.active]="activeTab()==='conclusiones'" (click)="setTab('conclusiones')">Conclusiones</button>
+    <button class="tab-pill" type="button" [class.active]="activeTab()==='biblio_anexos'" (click)="setTab('biblio_anexos')">Biblio/Anexos</button>
+  </nav>
+
+  <form class="content-card" *ngIf="form" [formGroup]="form">
+    <ng-container [ngSwitch]="activeTab()">
+
+      <div *ngSwitchCase="'portada'" class="tab-content">
+        <h2 class="section-title">Portada</h2>
+        <div class="form-group">
+          <label class="form-label">Título del documento</label>
+          <quill-editor formControlName="titulo" placeholder="Ingrese el título de su trabajo de titulación..."></quill-editor>
+        </div>
+      </div>
+
+      <div *ngSwitchCase="'resumen'" class="tab-content">
+        <h2 class="section-title">Resumen / Abstract</h2>
+
+        <div class="form-group">
+          <label class="form-label">Resumen (Español)</label>
+          <quill-editor formControlName="resumen" placeholder="Escriba el resumen de su investigación en español..."></quill-editor>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Abstract (English)</label>
+          <quill-editor formControlName="abstractText" placeholder="Write the abstract of your research in English..."></quill-editor>
+        </div>
+      </div>
+
+      <div *ngSwitchCase="'introduccion'" class="tab-content">
+        <h2 class="section-title">Introducción</h2>
+
+        <div class="form-group">
+          <label class="form-label">Introducción</label>
+          <quill-editor formControlName="introduccion" placeholder="Describa la introducción de su investigación..."></quill-editor>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Planteamiento del problema</label>
+          <quill-editor formControlName="problema" placeholder="Describa el problema que aborda su investigación..."></quill-editor>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Objetivo general</label>
+          <quill-editor formControlName="objetivosGenerales" placeholder="Defina el objetivo general de su investigación..."></quill-editor>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Objetivos específicos</label>
+          <quill-editor formControlName="objetivosEspecificos" placeholder="Liste los objetivos específicos de su investigación..."></quill-editor>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Justificación</label>
+          <quill-editor formControlName="justificacion" placeholder="Justifique la importancia de su investigación..."></quill-editor>
+        </div>
+      </div>
+
+      <div *ngSwitchCase="'marco_metodo'" class="tab-content">
+        <h2 class="section-title">Marco teórico / Metodología</h2>
+
+        <div class="form-group">
+          <label class="form-label">Marco teórico</label>
+          <quill-editor formControlName="marcoTeorico" placeholder="Desarrolle el marco teórico de su investigación..."></quill-editor>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Metodología</label>
+          <quill-editor formControlName="metodologia" placeholder="Describa la metodología aplicada en su investigación..."></quill-editor>
+        </div>
+      </div>
+
+      <div *ngSwitchCase="'resultados'" class="tab-content">
+        <h2 class="section-title">Resultados / Discusión</h2>
+
+        <div class="form-group">
+          <label class="form-label">Resultados</label>
+          <quill-editor formControlName="resultados" placeholder="Presente los resultados obtenidos en su investigación..."></quill-editor>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Discusión</label>
+          <quill-editor formControlName="discusion" placeholder="Analice y discuta los resultados obtenidos..."></quill-editor>
+        </div>
+      </div>
+
+      <div *ngSwitchCase="'conclusiones'" class="tab-content">
+        <h2 class="section-title">Conclusiones / Recomendaciones</h2>
+
+        <div class="form-group">
+          <label class="form-label">Conclusiones</label>
+          <quill-editor formControlName="conclusiones" placeholder="Redacte las conclusiones de su investigación..."></quill-editor>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Recomendaciones</label>
+          <quill-editor formControlName="recomendaciones" placeholder="Proponga recomendaciones basadas en su investigación..."></quill-editor>
+        </div>
+      </div>
+
+      <div *ngSwitchCase="'biblio_anexos'" class="tab-content">
+        <h2 class="section-title">Bibliografía / Anexos</h2>
+
+        <div class="form-group">
+          <label class="form-label">Bibliografía</label>
+          <quill-editor formControlName="bibliografia" placeholder="Liste las referencias bibliográficas utilizadas..."></quill-editor>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Anexos</label>
+          <quill-editor formControlName="anexos" placeholder="Incluya los anexos relevantes para su investigación..."></quill-editor>
+        </div>
+      </div>
+
+    </ng-container>
+  </form>
+
+  <section class="content-card">
+    <div class="card-header-section">
+      <h2 class="section-title">Historial de observaciones</h2>
+      <p class="section-subtitle">Comentarios registrados por el director sobre tu documento.</p>
+    </div>
+
+    <div class="observations-list" *ngIf="observaciones().length > 0; else emptyObservaciones">
+      <div class="observation-item" *ngFor="let o of observaciones()">
+        <div class="observation-head">
+          <strong>{{ o.seccion }}</strong>
+          <span>{{ o.estado }}</span>
+        </div>
+        <p>{{ o.comentario }}</p>
+        <small>{{ o.creadoEn || 'Fecha no disponible' }}</small>
+      </div>
+    </div>
+
+    <ng-template #emptyObservaciones>
+      <p class="empty-text">Aún no existen observaciones registradas.</p>
+    </ng-template>
+  </section>
+</div>

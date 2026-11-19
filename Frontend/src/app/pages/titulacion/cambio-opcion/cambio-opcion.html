@@ -1,0 +1,76 @@
+<div class="page">
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="title">Cambio de opción de titulación</div>
+        <div class="subtitle">Solo disponible para matrículas activas de Titulación I, con un único cambio permitido.</div>
+      </div>
+    </div>
+
+    <div class="alert warn" *ngIf="cargando">Cargando...</div>
+    <div class="alert error" *ngIf="mensajeError">{{ mensajeError }}</div>
+    <div class="alert ok" *ngIf="mensajeOk">{{ mensajeOk }}</div>
+
+    <div class="empty" *ngIf="!cargando && !matricula">
+      No tienes una matrícula activa de Titulación I.
+    </div>
+
+    <div *ngIf="!cargando && matricula">
+      <div class="current">
+        <span>Opción actual</span>
+        <strong>{{ matricula.nombreOpcionTitulacion }}<ng-container *ngIf="matricula.nombreSubtipoTrabajo"> — {{ matricula.nombreSubtipoTrabajo }}</ng-container></strong>
+        <span class="cambios">Cambios usados: {{ matricula.numeroCambiosOpcion || 0 }} / 1</span>
+      </div>
+
+      <div class="empty" *ngIf="!puedeCambiar">
+        Ya utilizaste tu único cambio de opción permitido para esta matrícula.
+      </div>
+
+      <form class="form-grid" *ngIf="puedeCambiar" (ngSubmit)="cambiar()">
+        <div class="field">
+          <label>Nueva opción de titulación</label>
+          <select [(ngModel)]="idOpcionTitulacion" name="idOpcionTitulacion" (ngModelChange)="onCambiarOpcion()">
+            <option [ngValue]="null">-- Selecciona --</option>
+            <option *ngFor="let m of modalidades" [ngValue]="m.idModalidad">{{ m.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="field" *ngIf="esTic">
+          <label>Subtipo de trabajo</label>
+          <select [(ngModel)]="idSubtipoTrabajo" name="idSubtipoTrabajo">
+            <option [ngValue]="null">-- Selecciona --</option>
+            <option *ngFor="let s of subtipos" [ngValue]="s.idTipoTrabajo">{{ s.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Semana académica actual</label>
+          <input type="number" min="1" [(ngModel)]="semanaActual" name="semanaActual" />
+        </div>
+
+        <div class="field">
+          <label>Motivo del cambio</label>
+          <textarea [(ngModel)]="motivo" name="motivo" rows="2"></textarea>
+        </div>
+
+        <div class="caso-medico" *ngIf="fueraDePlazo">
+          <div class="hint">
+            Estás fuera de la semana límite (4). Solo se permite el cambio acreditando un caso médico.
+          </div>
+          <div class="field">
+            <label>Motivo médico</label>
+            <textarea [(ngModel)]="motivoMedico" name="motivoMedico" rows="2"></textarea>
+          </div>
+          <div class="field">
+            <label>N.° de documento de soporte (trámite en Secretaría)</label>
+            <input type="number" [(ngModel)]="documentoAdjuntoId" name="documentoAdjuntoId" />
+          </div>
+        </div>
+
+        <button class="btn primary" type="submit" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Confirmar cambio' }}
+        </button>
+      </form>
+    </div>
+  </section>
+</div>

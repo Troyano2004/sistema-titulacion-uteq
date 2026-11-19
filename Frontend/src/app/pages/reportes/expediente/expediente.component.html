@@ -1,0 +1,30 @@
+<div class="rep-container">
+  <h2>Expediente por Estudiante</h2>
+
+  <div class="card-reporte">
+    <div class="card-header">
+      <span class="icono">&#128196;</span>
+      <div>
+        <h3>Expediente por Estudiante</h3>
+        <p>Historial completo del estudiante: proyecto, tutorias, tribunal y sustentaciones.</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <label>Estudiante</label>
+      <button type="button" class="btn-seleccionar" (click)="selector.abrir()">
+        <span *ngIf="!estudianteElegido">&#128269; Seleccionar estudiante</span>
+        <span *ngIf="estudianteElegido">{{ estudianteElegido.nombreCompleto }} &middot; {{ estudianteElegido.cedula }}</span>
+      </button>
+    </div>
+    <div class="card-actions">
+      <button (click)="expedientePdf()" [disabled]="!estudianteSeleccionado" class="btn-pdf">
+        &#128196; Descargar PDF
+      </button>
+      <button (click)="expedienteExcel()" [disabled]="!estudianteSeleccionado" class="btn-excel">
+        &#128202; Descargar Excel
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-selector-estudiante #selector (seleccionar)="onEstudianteSeleccionado($event)" />

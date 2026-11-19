@@ -1,0 +1,159 @@
+<div class="editor-tic">
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+  <div class="alert ok" *ngIf="ok()">{{ ok() }}</div>
+  <div class="loading" *ngIf="loading()">Cargando...</div>
+
+  <!-- Formulario de creación (sin documento aún) -->
+  <div class="creacion" *ngIf="!loading() && !documento()">
+    <h2>Crear documento del Trabajo de Integración Curricular</h2>
+    <form [formGroup]="formCreacion" (ngSubmit)="crearDocumento()">
+      <div class="form-row">
+        <label>Título del trabajo</label>
+        <input type="text" formControlName="titulo" placeholder="Título de tu trabajo de titulación">
+      </div>
+      <div class="form-row">
+        <label>Tipo de trabajo</label>
+        <select formControlName="idTipoTrabajo">
+          <option [ngValue]="null">-- Selecciona --</option>
+          <option *ngFor="let t of tiposTrabajos()" [ngValue]="t.idTipoTrabajo">{{ t.nombre }}</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Modalidad de entrega</label>
+        <div class="radio-group">
+          <label><input type="radio" formControlName="modalidadEntrega" value="REDACCION_SISTEMA"> Redacción en el sistema (editor por secciones)</label>
+          <label><input type="radio" formControlName="modalidadEntrega" value="UPLOAD_PDF"> Subir PDF ya elaborado</label>
+        </div>
+      </div>
+      <button type="submit">Crear documento</button>
+    </form>
+  </div>
+
+  <!-- Documento existente -->
+  <ng-container *ngIf="documento() as doc">
+
+    <!-- Barra superior -->
+    <div class="barra-superior">
+      <div class="titulo-doc">
+        <h2>{{ doc.titulo || '(sin título)' }}</h2>
+        <span class="badge" [class]="doc.estado">{{ doc.estado }}</span>
+      </div>
+      <div class="progreso" *ngIf="doc.modalidadEntrega === 'REDACCION_SISTEMA'">{{ progreso() }}</div>
+      <div class="acciones">
+        <button type="button" (click)="crearVersion()" *ngIf="doc.modalidadEntrega === 'REDACCION_SISTEMA'">Crear versión</button>
+        <button type="button" (click)="verHistorial()" *ngIf="doc.modalidadEntrega === 'REDACCION_SISTEMA'">Historial</button>
+        <button type="button" (click)="exportarPdf()">Exportar PDF</button>
+        <button type="button" (click)="exportarDocx()">Exportar DOCX</button>
+      </div>
+    </div>
+
+    <!-- Modalidad UPLOAD_PDF -->
+    <div class="upload-pdf" *ngIf="doc.modalidadEntrega === 'UPLOAD_PDF'">
+      <div class="dropzone">
+        <p *ngIf="!doc.archivoPdfUrl">Aún no se ha subido ningún PDF.</p>
+        <input type="file" accept="application/pdf" (change)="onArchivoSeleccionado($event)" [disabled]="archivoSubiendo()">
+        <p *ngIf="archivoSubiendo()">Subiendo...</p>
+      </div>
+      <div class="preview-pdf" *ngIf="doc.archivoPdfUrl">
+        <p>PDF actual:</p>
+        <iframe [src]="urlSegura(doc.archivoPdfUrl)" title="Vista previa del PDF"></iframe>
+        <a [href]="doc.archivoPdfUrl" target="_blank">Abrir en una pestaña nueva</a>
+      </div>
+
+      <div class="comentarios-generales">
+        <h3>Comentarios generales</h3>
+        <div class="comentario" *ngFor="let c of comentarios()">
+          <div class="comentario-head">
+            <strong>{{ c.nombreAutor }}</strong> <span class="rol">{{ c.rolAutor }}</span>
+            <span class="resuelto" *ngIf="c.resuelto">✔ Resuelto</span>
+          </div>
+          <p>{{ c.contenido }}</p>
+          <button type="button" *ngIf="!c.resuelto" (click)="resolverComentario(c.id)">Resolver</button>
+        </div>
+        <div class="nuevo-comentario" *ngIf="esDirectorOTribunal">
+          <textarea [(ngModel)]="nuevoComentario" [ngModelOptions]="{standalone:true}" placeholder="Agregar comentario general..."></textarea>
+          <button type="button" (click)="agregarComentario()">Comentar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editor por secciones (REDACCION_SISTEMA) -->
+    <div class="cuerpo" *ngIf="doc.modalidadEntrega === 'REDACCION_SISTEMA'">
+
+      <!-- Panel izquierdo: secciones -->
+      <div class="panel-secciones">
+        <div class="seccion-item" *ngFor="let s of doc.secciones"
+             [class.activa]="seccionActual()?.id === s.id"
+             (click)="seleccionarSeccion(s)">
+          <span class="estado-dot" [class]="s.estado"></span>
+          <span class="titulo-seccion">{{ s.titulo }}</span>
+          <span class="marca-obligatoria" *ngIf="s.obligatoria">*</span>
+          <span class="marca-auto" *ngIf="s.autoLlenada" title="Autogenerada">🔒</span>
+        </div>
+      </div>
+
+      <!-- Panel central: editor -->
+      <div class="panel-editor" *ngIf="seccionActual() as sec">
+        <div class="editor-header">
+          <h3>{{ sec.titulo }}</h3>
+          <span class="guardando" *ngIf="guardandoSeccion()">Guardando...</span>
+          <button type="button" (click)="guardarSeccionActual(false)" *ngIf="!sec.autoLlenada && !esDirectorOTribunal">Guardar</button>
+          <button type="button" class="toggle-comentarios" (click)="panelComentariosAbierto.set(!panelComentariosAbierto())">
+            💬 {{ comentariosDeSeccionActual.length }}
+          </button>
+        </div>
+
+        <div class="preview-auto" *ngIf="sec.autoLlenada">
+          <p class="aviso">Esta sección se genera automáticamente con los datos del sistema.</p>
+          <div class="contenido-preview" [innerHTML]="sec.contenidoHtml"></div>
+        </div>
+
+        <quill-editor *ngIf="!sec.autoLlenada"
+                      [ngModel]="contenidoEditando"
+                      (ngModelChange)="onContenidoCambia($event)"
+                      [ngModelOptions]="{standalone:true}"
+                      [readOnly]="esDirectorOTribunal"
+                      placeholder="Escribe el contenido de esta sección...">
+        </quill-editor>
+      </div>
+
+      <!-- Panel derecho: comentarios -->
+      <div class="panel-comentarios" *ngIf="panelComentariosAbierto()">
+        <h4>Comentarios</h4>
+        <div class="comentario" *ngFor="let c of comentariosDeSeccionActual">
+          <div class="comentario-head">
+            <strong>{{ c.nombreAutor }}</strong> <span class="rol">{{ c.rolAutor }}</span>
+          </div>
+          <p>{{ c.contenido }}</p>
+          <div class="comentario-footer">
+            <span class="resuelto" *ngIf="c.resuelto">✔ Resuelto</span>
+            <button type="button" *ngIf="!c.resuelto" (click)="resolverComentario(c.id)">Resolver</button>
+          </div>
+        </div>
+        <p class="empty" *ngIf="!comentariosDeSeccionActual.length">Sin comentarios en esta sección.</p>
+
+        <div class="nuevo-comentario" *ngIf="esDirectorOTribunal">
+          <textarea [(ngModel)]="nuevoComentario" [ngModelOptions]="{standalone:true}" placeholder="Agregar comentario..."></textarea>
+          <button type="button" (click)="agregarComentario()">Comentar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal historial de versiones -->
+    <div class="modal-overlay" *ngIf="mostrarHistorial()" (click)="cerrarHistorial()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3>Historial de versiones</h3>
+        <ul class="lista-versiones">
+          <li *ngFor="let v of versiones()" (click)="verVersion(v.id)">
+            v{{ v.numeroVersion }} — {{ v.fechaVersion }} — {{ v.creadaPor }}
+          </li>
+        </ul>
+        <div class="detalle-version" *ngIf="versionSeleccionada() as vd">
+          <h4>Contenido de la versión {{ vd.numeroVersion }}</h4>
+          <pre>{{ vd.contenidoSnapshot }}</pre>
+        </div>
+        <button type="button" (click)="cerrarHistorial()">Cerrar</button>
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,96 @@
+<div class="bibliografia-tic">
+  <h2>Bibliografía</h2>
+  <p class="subtitle">Art. 46 del Reglamento: mínimo 10 referencias, 60% con antigüedad ≤ 5 años.</p>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+  <div class="alert ok" *ngIf="ok()">{{ ok() }}</div>
+  <div class="loading" *ngIf="loading()">Cargando...</div>
+
+  <div class="stats" *ngIf="formateada() as f">
+    <div class="stat" [class.stat-ok]="f.cumpleMinimo" [class.stat-bad]="!f.cumpleMinimo">
+      <span class="val">{{ f.total }} / {{ f.minimoRequerido }}</span>
+      <span class="lbl">Referencias mínimas</span>
+    </div>
+    <div class="stat" [class.stat-ok]="f.cumpleRecientes" [class.stat-bad]="!f.cumpleRecientes">
+      <span class="val">{{ f.porcentajeRecientes }}%</span>
+      <span class="lbl">Con antigüedad ≤ 5 años (mínimo {{ f.porcentajeMinimoRecientes }}%)</span>
+    </div>
+    <div class="stat">
+      <span class="val">{{ f.estandar }}</span>
+      <span class="lbl">Estándar (según Facultad)</span>
+    </div>
+  </div>
+
+  <div class="tabla-wrap" *ngIf="idDocumento()">
+    <button type="button" class="btn-nueva" (click)="nuevaReferencia()">+ Nueva referencia</button>
+
+    <table class="tabla-referencias">
+      <thead>
+        <tr><th>Autores</th><th>Título</th><th>Año</th><th>Fuente</th><th>Tipo</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of referencias()">
+          <td>{{ r.autores }}</td>
+          <td>{{ r.titulo }}</td>
+          <td>{{ r.anioPublicacion }}</td>
+          <td>{{ r.fuente }}</td>
+          <td>{{ r.tipo }}</td>
+          <td class="acciones">
+            <button type="button" (click)="editar(r)">Editar</button>
+            <button type="button" class="btn-danger" (click)="eliminar(r)">✕</button>
+          </td>
+        </tr>
+        <tr *ngIf="!referencias().length"><td colspan="6" class="empty">No hay referencias registradas</td></tr>
+      </tbody>
+    </table>
+
+    <div class="preview-formateada" *ngIf="formateada() as f">
+      <h3>Vista previa formateada ({{ f.estandar }})</h3>
+      <ol>
+        <li *ngFor="let r of f.referenciasFormateadas">{{ r }}</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Modal formulario -->
+  <div class="modal-overlay" *ngIf="mostrarFormulario()">
+    <div class="modal">
+      <h3>{{ editandoId ? 'Editar referencia' : 'Nueva referencia' }}</h3>
+      <form [formGroup]="form" (ngSubmit)="guardar()">
+        <div class="form-row">
+          <label>Autores</label>
+          <input type="text" formControlName="autores" placeholder="Apellido, N.; Apellido, N.">
+        </div>
+        <div class="form-row">
+          <label>Título</label>
+          <input type="text" formControlName="titulo">
+        </div>
+        <div class="form-row-grid">
+          <div class="form-row">
+            <label>Año de publicación</label>
+            <input type="number" formControlName="anioPublicacion">
+          </div>
+          <div class="form-row">
+            <label>Tipo</label>
+            <select formControlName="tipo">
+              <option value="LIBRO">Libro</option>
+              <option value="ARTICULO">Artículo</option>
+              <option value="TESIS">Tesis</option>
+              <option value="WEB">Web</option>
+              <option value="CONFERENCIA">Conferencia</option>
+              <option value="OTRO">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Fuente (revista/editorial/URL)</label>
+          <input type="text" formControlName="fuente">
+        </div>
+        <div class="modal-actions">
+          <button type="button" (click)="cancelar()">Cancelar</button>
+          <button type="submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

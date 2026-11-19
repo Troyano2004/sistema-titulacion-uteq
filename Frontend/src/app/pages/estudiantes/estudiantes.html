@@ -1,0 +1,37 @@
+<div class="container">
+  <h2>Listado de Estudiantes</h2>
+
+  <!-- 1) Cargando -->
+  <p *ngIf="cargando">Cargando datos...</p>
+
+  <!-- 2) Error -->
+  <p *ngIf="!cargando && errorMsg">{{ errorMsg }}</p>
+
+  <!-- 3) Tabla -->
+  <table *ngIf="!cargando && !errorMsg" border="1">
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Cédula</th>
+      <th>Nombres</th>
+      <th>Apellidos</th>
+      <th>Carrera</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr *ngFor="let est of listaEstudiantes">
+      <td>{{ est.idEstudiante }}</td>
+      <td>{{ est.usuario?.cedula }}</td>
+      <td>{{ est.usuario?.nombres }}</td>
+      <td>{{ est.usuario?.apellidos }}</td>
+      <td>{{ est.carrera?.nombre }}</td>
+    </tr>
+
+    <!-- Si no hay datos -->
+    <tr *ngIf="listaEstudiantes.length === 0">
+      <td colspan="5">No hay estudiantes.</td>
+    </tr>
+    </tbody>
+  </table>
+</div>

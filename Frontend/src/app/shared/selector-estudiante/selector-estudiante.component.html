@@ -1,0 +1,69 @@
+<div class="sel-overlay" *ngIf="abierto()" (click)="cerrar()">
+  <div class="sel-card" (click)="$event.stopPropagation()">
+    <div class="sel-header">
+      <h3>Seleccionar estudiante</h3>
+      <button type="button" class="sel-cerrar" (click)="cerrar()" aria-label="Cerrar">&times;</button>
+    </div>
+
+    <div class="sel-filtros">
+      <div class="sel-busqueda">
+        <span class="sel-busqueda-icono">&#128269;</span>
+        <input
+          type="text"
+          placeholder="Buscar por nombre o cédula..."
+          [(ngModel)]="texto"
+        />
+      </div>
+
+      <div class="sel-filtros-fila">
+        <select [(ngModel)]="carreraFiltro">
+          <option value="">Todas las carreras</option>
+          <option *ngFor="let c of carreras" [value]="c">{{ c }}</option>
+        </select>
+        <select [(ngModel)]="cursoFiltro">
+          <option [ngValue]="null">Todos los cursos</option>
+          <option *ngFor="let n of cursos" [ngValue]="n">Semestre {{ n }}</option>
+        </select>
+        <button type="button" class="sel-limpiar" *ngIf="hayFiltrosActivos" (click)="limpiarFiltros()">
+          Limpiar filtros
+        </button>
+      </div>
+    </div>
+
+    <div class="sel-lista">
+      <div *ngIf="cargando()" class="sel-estado">Cargando estudiantes...</div>
+
+      <div *ngIf="!cargando() && error()" class="sel-estado sel-error">
+        {{ error() }}
+        <button type="button" class="sel-reintentar" (click)="reintentar()">Reintentar</button>
+      </div>
+
+      <div *ngIf="!cargando() && !error() && resultados.length === 0" class="sel-estado">
+        No se encontraron estudiantes con ese filtro.
+      </div>
+
+      <button
+        type="button"
+        class="sel-fila"
+        *ngFor="let e of resultados"
+        (click)="elegir(e)"
+      >
+        <span class="sel-avatar">{{ e.nombreCompleto.charAt(0) }}</span>
+        <span class="sel-info">
+          <span class="sel-nombre">{{ e.nombreCompleto }}</span>
+          <span class="sel-detalle">
+            <span *ngIf="e.cedula">{{ e.cedula }}</span>
+            <span *ngIf="e.carrera" class="sel-punto">&middot;</span>
+            <span *ngIf="e.carrera">{{ e.carrera }}</span>
+            <span *ngIf="e.nivelSemestre" class="sel-punto">&middot;</span>
+            <span *ngIf="e.nivelSemestre">Semestre {{ e.nivelSemestre }}</span>
+          </span>
+        </span>
+      </button>
+    </div>
+
+    <div class="sel-footer">
+      <span>{{ resultados.length }} resultado(s)</span>
+    </div>
+  </div>
+</div>

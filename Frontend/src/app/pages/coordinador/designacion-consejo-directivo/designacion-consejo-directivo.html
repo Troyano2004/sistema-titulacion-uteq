@@ -1,0 +1,102 @@
+<div class="page">
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="title">Designación del Consejo Directivo</div>
+        <div class="subtitle">Propuestas del TIC aprobadas por la Comisión, pendientes de designar Director y Tribunal.</div>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <div class="field">
+        <label>Carrera</label>
+        <select [(ngModel)]="idCarreraFiltro" name="idCarreraFiltro" (ngModelChange)="buscar()">
+          <option [ngValue]="null">Todas</option>
+          <option *ngFor="let c of carreras" [ngValue]="c.idCarrera">{{ c.nombre }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="alert error" *ngIf="mensajeError">{{ mensajeError }}</div>
+    <div class="alert warn" *ngIf="cargando">Cargando...</div>
+
+    <div class="empty" *ngIf="!cargando && !pendientes.length">No hay propuestas pendientes de resolución.</div>
+
+    <table class="tabla" *ngIf="pendientes.length">
+      <thead>
+        <tr><th>Propuesta</th><th>Estudiante</th><th>Carrera</th><th>Días hábiles</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of pendientes">
+          <td>{{ p.titulo }}</td>
+          <td>{{ p.estudiante }}</td>
+          <td>{{ p.carrera }}</td>
+          <td [class.vencido]="p.diasHabilesTranscurridos > 10">{{ p.diasHabilesTranscurridos }}</td>
+          <td><button class="btn primary sm" (click)="abrirDesignacion(p)">Designar</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Modal de designación -->
+  <div class="modal-overlay" *ngIf="propuestaSeleccionada" (click)="cerrarDesignacion()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Designar Director y Tribunal</h2>
+        <button class="modal-close" (click)="cerrarDesignacion()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="propuesta-titulo">{{ propuestaSeleccionada.titulo }} — {{ propuestaSeleccionada.estudiante }}</p>
+
+        <div class="alert warn" *ngIf="cargandoDocentes">Cargando docentes elegibles...</div>
+        <div class="alert error" *ngIf="!cargandoDocentes && !docentesElegibles.length">
+          No hay docentes elegibles (de planta, con posgrado) vinculados a esta carrera.
+        </div>
+
+        <div class="field" *ngIf="docentesElegibles.length">
+          <label>Director del TIC</label>
+          <select [(ngModel)]="directorId" name="directorId">
+            <option [ngValue]="null">-- Selecciona --</option>
+            <option *ngFor="let d of docentesElegibles" [ngValue]="d.idDocente">{{ d.nombre }}</option>
+          </select>
+        </div>
+        <div class="field" *ngIf="docentesElegibles.length">
+          <label>Presidente del Tribunal</label>
+          <select [(ngModel)]="presidenteTribunalId" name="presidenteTribunalId">
+            <option [ngValue]="null">-- Selecciona --</option>
+            <option *ngFor="let d of docentesElegibles" [ngValue]="d.idDocente">{{ d.nombre }}</option>
+          </select>
+        </div>
+        <div class="field" *ngIf="docentesElegibles.length">
+          <label>Vocal 1</label>
+          <select [(ngModel)]="vocal1Id" name="vocal1Id">
+            <option [ngValue]="null">-- Selecciona --</option>
+            <option *ngFor="let d of docentesElegibles" [ngValue]="d.idDocente">{{ d.nombre }}</option>
+          </select>
+        </div>
+        <div class="field" *ngIf="docentesElegibles.length">
+          <label>Vocal 2</label>
+          <select [(ngModel)]="vocal2Id" name="vocal2Id">
+            <option [ngValue]="null">-- Selecciona --</option>
+            <option *ngFor="let d of docentesElegibles" [ngValue]="d.idDocente">{{ d.nombre }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Observaciones</label>
+          <textarea [(ngModel)]="observaciones" name="observaciones" rows="2"></textarea>
+        </div>
+
+        <div class="alert error" *ngIf="errorDesignacion">{{ errorDesignacion }}</div>
+        <div class="alert ok" *ngIf="okDesignacion">{{ okDesignacion }}</div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn secondary" (click)="cerrarDesignacion()">Cancelar</button>
+        <button class="btn primary" [disabled]="designando || !docentesElegibles.length" (click)="aprobarYDesignar()">
+          {{ designando ? 'Guardando...' : 'Aprobar y designar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

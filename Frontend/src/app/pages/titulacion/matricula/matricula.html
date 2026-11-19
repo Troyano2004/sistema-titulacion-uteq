@@ -1,0 +1,68 @@
+<div class="page">
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="title">Matrícula de Titulación</div>
+        <div class="subtitle">Selecciona tu opción de titulación para el periodo académico actual.</div>
+      </div>
+    </div>
+
+    <div class="alert warn" *ngIf="cargando">Cargando...</div>
+    <div class="alert error" *ngIf="mensajeError">{{ mensajeError }}</div>
+    <div class="alert ok" *ngIf="mensajeOk">{{ mensajeOk }}</div>
+
+    <form class="form-grid" *ngIf="!cargando" (ngSubmit)="matricularse()">
+      <div class="field">
+        <label>Nivel</label>
+        <select [(ngModel)]="nivel" name="nivel">
+          <option value="TITULACION_I">Titulación I</option>
+          <option value="TITULACION_II">Titulación II</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Periodo académico</label>
+        <input type="text" [(ngModel)]="periodoAcademico" name="periodoAcademico" placeholder="2025-1" />
+      </div>
+
+      <div class="field">
+        <label>Opción de titulación</label>
+        <select [(ngModel)]="idOpcionTitulacion" name="idOpcionTitulacion" (ngModelChange)="onCambiarOpcion()">
+          <option [ngValue]="null">-- Selecciona --</option>
+          <option *ngFor="let m of modalidades" [ngValue]="m.idModalidad">{{ m.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="field" *ngIf="esTic">
+        <label>Subtipo de trabajo (Trabajo de Integración Curricular)</label>
+        <select [(ngModel)]="idSubtipoTrabajo" name="idSubtipoTrabajo">
+          <option [ngValue]="null">-- Selecciona --</option>
+          <option *ngFor="let s of subtipos" [ngValue]="s.idTipoTrabajo">{{ s.nombre }}</option>
+        </select>
+        <div class="hint" *ngIf="!subtipos.length">
+          No hay subtipos configurados para esta opción; contacta a Coordinación.
+        </div>
+      </div>
+
+      <fieldset class="field" *ngIf="nivel === 'TITULACION_II'">
+        <legend>Requisitos Art. 18</legend>
+        <label class="checkbox">
+          <input type="checkbox" [(ngModel)]="idiomaExtranjeroAprobado" name="idiomaExtranjeroAprobado" />
+          Idioma extranjero aprobado
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" [(ngModel)]="practicasLaboralesAprobadas" name="practicasLaboralesAprobadas" />
+          Prácticas laborales aprobadas
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" [(ngModel)]="servicioComunitarioAprobado" name="servicioComunitarioAprobado" />
+          Servicio comunitario aprobado
+        </label>
+      </fieldset>
+
+      <button class="btn primary" type="submit" [disabled]="guardando">
+        {{ guardando ? 'Matriculando...' : 'Matricularme' }}
+      </button>
+    </form>
+  </section>
+</div>

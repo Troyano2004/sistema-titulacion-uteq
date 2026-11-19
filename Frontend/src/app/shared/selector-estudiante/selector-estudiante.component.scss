@@ -1,0 +1,125 @@
+$sga-green:      #0f7a3a;
+$sga-green-dark: #0c6a32;
+$sga-hover:      #e9f6ef;
+$sga-border:     #e5e7eb;
+
+.sel-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: grid; place-items: center;
+  padding: 1rem;
+  z-index: 200;
+}
+
+.sel-card {
+  width: 100%; max-width: 460px; max-height: min(600px, 90vh);
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.sel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, $sga-green 0%, $sga-green-dark 100%);
+  color: #fff; flex-shrink: 0;
+
+  h3 { margin: 0; font-size: 1.05rem; font-weight: 800; }
+}
+
+.sel-cerrar {
+  background: rgba(255,255,255,0.18); border: none; color: #fff;
+  width: 28px; height: 28px; border-radius: 50%; font-size: 1.1rem; line-height: 1;
+  cursor: pointer; display: grid; place-items: center;
+  &:hover { background: rgba(255,255,255,0.3); }
+}
+
+.sel-filtros {
+  padding: 0.9rem 1.1rem 0.6rem; flex-shrink: 0;
+  border-bottom: 1px solid $sga-border;
+}
+
+.sel-busqueda {
+  display: flex; align-items: center; gap: 0.5rem;
+  border: 1px solid $sga-border; border-radius: 10px; padding: 0.55rem 0.75rem;
+  margin-bottom: 0.6rem;
+  &:focus-within { border-color: $sga-green; box-shadow: 0 0 0 3px rgba(15,122,58,0.12); }
+
+  .sel-busqueda-icono { opacity: 0.55; font-size: 0.9rem; }
+
+  input {
+    border: none; outline: none; flex: 1; font-size: 0.9rem; background: transparent; color: inherit;
+    &::placeholder { color: #9ca3af; }
+  }
+}
+
+.sel-filtros-fila {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+
+  select {
+    flex: 1 1 140px; min-width: 0;
+    border: 1px solid $sga-border; border-radius: 8px; padding: 0.4rem 0.5rem;
+    font-size: 0.82rem; background: #fff; color: inherit;
+  }
+}
+
+.sel-limpiar {
+  background: none; border: none; color: $sga-green-dark; font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; padding: 0.3rem 0.2rem; text-decoration: underline;
+  white-space: nowrap;
+}
+
+.sel-lista {
+  flex: 1; overflow-y: auto; padding: 0.4rem;
+}
+
+.sel-estado {
+  padding: 1.5rem 1rem; text-align: center; color: #6b7280; font-size: 0.88rem;
+}
+.sel-error { color: #b91c1c; }
+.sel-reintentar {
+  display: block; margin: 0.5rem auto 0; background: $sga-green; color: #fff; border: none;
+  border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+}
+
+.sel-fila {
+  width: 100%; display: flex; align-items: center; gap: 0.7rem;
+  background: none; border: none; border-radius: 10px; padding: 0.55rem 0.6rem;
+  cursor: pointer; text-align: left; color: inherit;
+
+  &:hover { background: $sga-hover; }
+}
+
+.sel-avatar {
+  flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+  background: $sga-hover; color: $sga-green-dark; font-weight: 800; font-size: 0.85rem;
+  display: grid; place-items: center; text-transform: uppercase;
+}
+
+.sel-info { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.sel-nombre { font-weight: 600; font-size: 0.88rem; }
+.sel-detalle {
+  font-size: 0.76rem; color: #6b7280;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sel-punto { margin: 0 0.3rem; }
+
+.sel-footer {
+  flex-shrink: 0; padding: 0.55rem 1.1rem;
+  border-top: 1px solid $sga-border;
+  font-size: 0.76rem; color: #9ca3af;
+}
+
+// ─── Modo oscuro ─────────────────────────────────────────────────────────
+:host-context(body.dark-mode) {
+  .sel-card { background: #1e293b; color: #e2e8f0; }
+  .sel-filtros { border-bottom-color: #334155; }
+  .sel-busqueda { border-color: #334155; }
+  .sel-filtros-fila select { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+  .sel-footer { border-top-color: #334155; color: #64748b; }
+  .sel-fila:hover { background: #0f2a1c; }
+  .sel-avatar { background: #0f2a1c; color: #86efac; }
+  .sel-detalle { color: #94a3b8; }
+  .sel-estado { color: #94a3b8; }
+}

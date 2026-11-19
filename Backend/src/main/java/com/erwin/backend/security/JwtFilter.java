@@ -1,0 +1,92 @@
+
+package com.erwin.backend.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * NO es @Component a propósito: si lo fuera, Spring Boot lo registraría
+ * también como filtro de servlet genérico (vía FilterRegistrationBean),
+ * ejecutándose DESPUÉS de la propia cadena de Spring Security — incluido
+ * AnonymousAuthenticationFilter, que ya deja el SecurityContext con un
+ * Authentication no nulo (anónimo). Como este filtro solo actúa cuando
+ * getAuthentication() == null, nunca llegaría a autenticar nada. Por eso
+ * se instancia y se registra explícitamente con addFilterBefore en
+ * SecurityConfig, para que corra ANTES de esos filtros por defecto.
+ */
+public class JwtFilter extends OncePerRequestFilter {
+
+    private final JwtService jwtService;
+
+    public JwtFilter(JwtService jwtService) {
+        this.jwtService = jwtService;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
+        // ✅ EXCEPCIÓN PARA LOGIN (NO PROTEGER)
+        String path = request.getServletPath();
+        if (path.startsWith("/api/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // 🔒 A PARTIR DE AQUÍ SÍ SE PROTEGE
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String token = authHeader.substring(7);
+
+        if (!jwtService.isTokenValid(token)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String username = jwtService.extractUsername(token);
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            // Los roles ya vienen en formato "ROLE_XXX" (ver AuthService/JwtService),
+            // por eso NO se vuelve a anteponer "ROLE_" aquí.
+            List<GrantedAuthority> authorities = jwtService.extractRoles(token).stream()
+                    .filter(r -> r != null && !r.isBlank())
+                    .<GrantedAuthority>map(SimpleGrantedAuthority::new)
+                    .toList();
+
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            username,
+                            null,
+                            authorities
+                    );
+
+            authentication.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+
+        filterChain.doFilter(request, response);
+    }
+}

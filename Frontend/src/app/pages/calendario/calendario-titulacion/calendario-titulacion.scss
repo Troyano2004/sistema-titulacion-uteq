@@ -1,0 +1,90 @@
+.calendario-titulacion {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  h2 { margin: 0 0 4px; font-size: 1.4rem; }
+  .subtitle { color: #666; margin: 0 0 20px; font-size: .85rem; }
+
+  .alert {
+    padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; font-size: .9rem;
+    &.error { background: #fff0f0; border-left: 4px solid #e53e3e; color: #c53030; }
+    &.ok    { background: #f0fff4; border-left: 4px solid #38a169; color: #276749; }
+  }
+  .loading { color: #666; padding: 8px 0; }
+
+  .filtros {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;
+    .form-row {
+      label { display: block; font-size: .8rem; font-weight: 600; color: #4a5568; margin-bottom: 4px; }
+      select { width: 100%; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; }
+    }
+  }
+  @media (max-width: 700px) { .filtros { grid-template-columns: 1fr; } }
+
+  .aval-panel {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: #f7fafc; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px;
+    .aval-estado { font-size: .85rem; flex: 1; min-width: 220px; }
+    .aval-estado.avalado span { color: #276749; }
+    .aval-estado.pendiente span { color: #c05621; }
+    button {
+      padding: 7px 16px; border: none; border-radius: 6px; background: #0f7a3a; color: #fff; cursor: pointer; font-size: .85rem;
+    }
+  }
+
+  .leyenda {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
+    .chip { padding: 3px 10px; border-radius: 12px; color: #fff; font-size: .7rem; font-weight: 600; }
+  }
+
+  .lista-eventos {
+    display: flex; flex-direction: column; gap: 8px;
+    .evento-row {
+      display: grid; grid-template-columns: 160px 140px 1fr 140px; gap: 12px; align-items: center;
+      background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #718096; border-radius: 6px;
+      padding: 10px 14px; cursor: pointer; font-size: .85rem;
+      &:hover { background: #f7fafc; }
+      .fecha { font-weight: 600; color: #2d3748; }
+      .tipo { color: #fff; padding: 2px 8px; border-radius: 4px; font-size: .7rem; text-align: center; }
+      .descripcion { color: #4a5568; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .carrera { color: #718096; font-size: .78rem; text-align: right; }
+    }
+    @media (max-width: 700px) {
+      .evento-row { grid-template-columns: 1fr; }
+      .carrera { text-align: left; }
+    }
+    .empty { text-align: center; color: #999; padding: 24px; }
+  }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex;
+    align-items: center; justify-content: center; z-index: 100; padding: 16px;
+  }
+  .modal {
+    background: #fff; border-radius: 10px; padding: 24px; width: 100%; max-width: 480px;
+    h3 { margin: 0 0 12px; }
+    p { margin: 6px 0; font-size: .9rem; color: #4a5568; }
+    button { margin-top: 16px; padding: 8px 20px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; cursor: pointer; }
+  }
+}
+
+:host-context(body.dark-mode) .calendario-titulacion {
+  h2 { color: #f1f5f9; }
+  .subtitle, .loading { color: #94a3b8; }
+  .filtros .form-row label { color: #94a3b8; }
+  .filtros .form-row select { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+  .aval-panel { background: #0f172a; }
+  .lista-eventos .evento-row {
+    background: #1e293b; border-color: #334155;
+    &:hover { background: #263448; }
+    .fecha { color: #f1f5f9; }
+    .descripcion { color: #cbd5e1; }
+    .carrera { color: #94a3b8; }
+  }
+  .lista-eventos .empty { color: #64748b; }
+  .modal { background: #1e293b; }
+  .modal h3 { color: #f1f5f9; }
+  .modal p { color: #cbd5e1; }
+  .modal button { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+}

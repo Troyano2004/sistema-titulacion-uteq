@@ -1,0 +1,138 @@
+<div class="banco-preguntas">
+  <h2>Banco de Preguntas — Examen Complexivo</h2>
+  <p class="subtitle">Los estudiantes nunca tienen acceso a este banco.</p>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+  <div class="alert ok" *ngIf="ok()">{{ ok() }}</div>
+
+  <div class="form-row">
+    <label>Carrera</label>
+    <select [(ngModel)]="idCarreraSeleccionada" (ngModelChange)="onCarreraChange()">
+      <option [ngValue]="null">-- Selecciona una carrera --</option>
+      <option *ngFor="let c of carreras()" [ngValue]="c.idCarrera">{{ c.nombre }}</option>
+    </select>
+  </div>
+
+  <ng-container *ngIf="idCarreraSeleccionada">
+    <div class="stats" *ngIf="estadisticas() as st">
+      <div class="stat" [class.stat-ok]="st.cumpleMinimo" [class.stat-bad]="!st.cumpleMinimo">
+        <span class="val">{{ st.totalActivas }} / {{ st.minimoRequerido }}</span>
+        <span class="lbl">Preguntas activas (mínimo para habilitar el examen)</span>
+      </div>
+      <div class="stat-eje" *ngFor="let eje of objectKeys(st.porEjeTematico)">
+        <span class="eje-nombre">{{ eje }}</span>
+        <span class="eje-count">{{ st.porEjeTematico[eje] }}</span>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <select [(ngModel)]="filtroEje" (ngModelChange)="aplicarFiltros()">
+        <option [ngValue]="null">Todos los ejes</option>
+        <option *ngFor="let e of ejes()" [ngValue]="e.id">{{ e.nombre }}</option>
+      </select>
+      <select [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()">
+        <option value="">Todos los estados</option>
+        <option value="ACTIVA">Activa</option>
+        <option value="EN_REVISION">En revisión</option>
+        <option value="INACTIVA">Inactiva</option>
+      </select>
+      <button type="button" (click)="nuevaPregunta()">+ Nueva pregunta</button>
+    </div>
+
+    <div class="loading" *ngIf="loading()">Cargando...</div>
+
+    <table class="tabla-preguntas" *ngIf="!loading()">
+      <thead>
+        <tr>
+          <th>Enunciado</th>
+          <th>Eje</th>
+          <th>Dificultad</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of preguntas()">
+          <td class="enunciado-cell">{{ p.enunciado }}</td>
+          <td>{{ p.nombreEjeTematico }}</td>
+          <td>{{ p.dificultad }}</td>
+          <td><span class="badge" [class]="p.estado">{{ p.estado }}</span></td>
+          <td class="acciones">
+            <button type="button" (click)="editar(p)">Editar</button>
+            <button type="button" class="btn-danger" (click)="desactivar(p)" *ngIf="p.estado !== 'INACTIVA'">Desactivar</button>
+          </td>
+        </tr>
+        <tr *ngIf="!preguntas().length"><td colspan="5" class="empty">No hay preguntas registradas</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Formulario crear/editar -->
+    <div class="modal-overlay" *ngIf="mostrarFormulario()">
+      <div class="modal">
+        <h3>{{ editandoId ? 'Editar pregunta' : 'Nueva pregunta' }}</h3>
+        <form [formGroup]="form" (ngSubmit)="guardar()" *ngIf="!previsualizando()">
+          <div class="form-row">
+            <label>Eje temático</label>
+            <select formControlName="idEjeTematico">
+              <option [ngValue]="null">-- Selecciona --</option>
+              <option *ngFor="let e of ejes()" [ngValue]="e.id">{{ e.nombre }}</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Enunciado</label>
+            <textarea formControlName="enunciado" rows="3"></textarea>
+          </div>
+          <div class="form-row-grid">
+            <div class="form-row">
+              <label>Dificultad</label>
+              <select formControlName="dificultad">
+                <option value="BASICA">Básica</option>
+                <option value="INTERMEDIA">Intermedia</option>
+                <option value="AVANZADA">Avanzada</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>Periodo académico</label>
+              <input type="text" formControlName="periodoAcademico" placeholder="ej. 2025-2025">
+            </div>
+            <div class="form-row">
+              <label>Estado</label>
+              <select formControlName="estado">
+                <option value="EN_REVISION">En revisión</option>
+                <option value="ACTIVA">Activa</option>
+                <option value="INACTIVA">Inactiva</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="opciones" formArrayName="opciones">
+            <label>Opciones (marca la correcta, entre 2 y 5)</label>
+            <div class="opcion-row" *ngFor="let op of opciones.controls; let i = index" [formGroupName]="i">
+              <input type="radio" name="correcta" [checked]="op.get('esCorrecta')?.value" (change)="marcarCorrecta(i)">
+              <input type="text" formControlName="texto" [placeholder]="'Opción ' + (i + 1)">
+              <button type="button" class="btn-danger-sm" (click)="quitarOpcion(i)" *ngIf="opciones.length > 2">✕</button>
+            </div>
+            <button type="button" (click)="agregarOpcion()" *ngIf="opciones.length < 5">+ Agregar opción</button>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" (click)="togglePreview()">Vista previa</button>
+            <button type="button" (click)="cancelar()">Cancelar</button>
+            <button type="submit" [disabled]="loading()">Guardar</button>
+          </div>
+        </form>
+
+        <!-- Vista previa como la ve el estudiante -->
+        <div class="preview" *ngIf="previsualizando()">
+          <p class="preview-enunciado">{{ form.value.enunciado || '(sin enunciado)' }}</p>
+          <div class="preview-opcion" *ngFor="let op of opciones.value">
+            <input type="radio" disabled> {{ op.texto || '(opción vacía)' }}
+          </div>
+          <div class="modal-actions">
+            <button type="button" (click)="togglePreview()">Volver a editar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

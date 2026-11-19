@@ -1,0 +1,324 @@
+
+<section class="module-page">
+  <header class="module-header">
+    <div>
+      <h1>Registrar propuesta</h1>
+      <p>Redacta tu propuesta, revísala con IA y luego envíala a la comisión.</p>
+    </div>
+  </header>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+  <div class="alert ok"    *ngIf="ok()">{{ ok() }}</div>
+
+  <!-- Indicador de plazo (semanas 01-04) -->
+  <div class="alert" [class.ok]="dentroDePlazoPropuesta" [class.error]="!dentroDePlazoPropuesta" *ngIf="periodoActivo()">
+    <ng-container *ngIf="dentroDePlazoPropuesta; else fueraDePlazo">
+      Semana {{ semanaActual }} de 4 para presentar tu propuesta del TIC.
+    </ng-container>
+    <ng-template #fueraDePlazo>
+      Fuera de plazo: la propuesta solo puede presentarse entre las semanas 01 y 04 del periodo
+      (semana actual: {{ semanaActual }}).
+    </ng-template>
+  </div>
+
+  <!-- PASO 1: Modalidad -->
+  <article class="card modalidad-card" *ngIf="estadoModalidad() as estado">
+    <h2>Paso 1: Modalidad de titulación</h2>
+
+    <div class="alert ok" *ngIf="estado.tieneModalidad">
+      Modalidad registrada: <strong>{{ estado.modalidad }}</strong>. Ya puedes continuar con tu propuesta.
+    </div>
+
+    <div class="modalidad-form" *ngIf="!estado.tieneModalidad">
+      <p class="hint">Para enviar tu propuesta primero debes escoger una modalidad de titulación.</p>
+      <label>Selecciona modalidad
+        <select [ngModel]="modalidadSeleccionada()" (ngModelChange)="modalidadSeleccionada.set($event)">
+          <option [ngValue]="null">-- Selecciona una modalidad --</option>
+          <option *ngFor="let modalidad of estado.modalidadesDisponibles" [ngValue]="modalidad.idModalidad">
+            {{ modalidad.nombre }}
+          </option>
+        </select>
+      </label>
+      <small *ngIf="estado.modalidadesDisponibles.length === 0" class="warn-inline">
+        No hay modalidades activas para tu carrera. Comunícate con coordinación.
+      </small>
+      <button class="btn primary" (click)="guardarModalidad()"
+              [disabled]="guardandoModalidad() || estado.modalidadesDisponibles.length === 0">
+        {{ guardandoModalidad() ? 'Guardando...' : 'Guardar modalidad' }}
+      </button>
+    </div>
+    <small *ngIf="loadingModalidad()">Validando modalidad actual...</small>
+  </article>
+
+  <div class="grid">
+
+    <!-- PASO 2: Formulario propuesta -->
+    <article class="card" [class.card-disabled]="!tieneModalidadSeleccionada">
+      <h2>Paso 2: Redacta tu propuesta</h2>
+
+      <label>Carrera
+        <input type="text" [value]="nombreCarreraSeleccionada || 'No definida'" disabled>
+      </label>
+      <small *ngIf="loadingModalidad()">Cargando tu carrera...</small>
+      <small class="alert error" *ngIf="!loadingModalidad() && !nombreCarreraSeleccionada">
+        Tu usuario no tiene una carrera asignada. Contacta a coordinación antes de continuar.
+      </small>
+
+      <label>Tema sugerido por comisión
+        <select [(ngModel)]="form.idTema" (ngModelChange)="onSeleccionTema()"
+                [disabled]="!tieneModalidadSeleccionada">
+          <option [ngValue]="null">-- Selecciona un tema --</option>
+          <option *ngFor="let t of temasFiltradosPorCarrera" [ngValue]="t.idTema">
+            {{ t.titulo }} ({{ t.carrera }})
+          </option>
+        </select>
+      </label>
+      <small *ngIf="loadingTemas()">Cargando temas disponibles...</small>
+      <small *ngIf="!loadingTemas() && temasDisponibles().length === 0">No hay temas cargados por la comisión.</small>
+      <small *ngIf="!loadingTemas() && temasFiltradosPorCarrera.length === 0 && temasDisponibles().length > 0">
+        No hay temas para la carrera seleccionada.
+      </small>
+
+      <label>Título
+        <input type="text" [(ngModel)]="form.titulo" [disabled]="!tieneModalidadSeleccionada" />
+      </label>
+
+      <!-- Modalidad de entrega: REDACCION_SISTEMA -->
+      <ng-container *ngIf="modalidadEntrega() === 'REDACCION_SISTEMA'">
+        <label>Tema de investigación
+          <textarea rows="2" [(ngModel)]="form.temaInvestigacion" [disabled]="!tieneModalidadSeleccionada"></textarea>
+        </label>
+        <label>Planteamiento del problema
+          <textarea rows="3" [(ngModel)]="form.planteamientoProblema" [disabled]="!tieneModalidadSeleccionada"></textarea>
+        </label>
+        <label>Objetivos generales
+          <textarea rows="2" [(ngModel)]="form.objetivosGenerales" [disabled]="!tieneModalidadSeleccionada"></textarea>
+        </label>
+        <label>Objetivos específicos
+          <textarea rows="3" [(ngModel)]="form.objetivosEspecificos" [disabled]="!tieneModalidadSeleccionada"></textarea>
+        </label>
+        <label>Metodología
+          <textarea rows="2" [(ngModel)]="form.metodologia" [disabled]="!tieneModalidadSeleccionada"></textarea>
+        </label>
+        <label>Resultados esperados
+          <textarea rows="2" [(ngModel)]="form.resultadosEsperados" [disabled]="!tieneModalidadSeleccionada"></textarea>
+        </label>
+
+        <div class="referencias-block">
+          <label class="referencias-label">
+            Referencias bibliográficas
+            <small class="hint">Mínimo 10, al menos 60% con antigüedad ≤ 5 años.</small>
+          </label>
+
+          <div class="referencia-row" *ngFor="let ref of referencias; let i = index">
+            <input type="text" placeholder="Referencia (autor, título, fuente...)"
+                   [(ngModel)]="ref.texto" [disabled]="!tieneModalidadSeleccionada" />
+            <input type="number" placeholder="Año" style="width: 90px;"
+                   [(ngModel)]="ref.anio" [disabled]="!tieneModalidadSeleccionada" />
+            <button type="button" class="btn ghost sm" (click)="quitarReferencia(i)"
+                    [disabled]="referencias.length <= 1 || !tieneModalidadSeleccionada">✕</button>
+          </div>
+
+          <button type="button" class="btn secondary sm" (click)="agregarReferencia()" [disabled]="!tieneModalidadSeleccionada">
+            + Agregar referencia
+          </button>
+
+          <div class="referencias-resumen" [class.valido]="bibliografiaValida" [class.invalido]="!bibliografiaValida">
+            {{ totalReferencias }} referencia(s) válida(s) · {{ porcentajeRecientes }}% con antigüedad ≤ 5 años
+            {{ bibliografiaValida ? '✓' : '(se requieren ≥10 referencias y ≥60% recientes)' }}
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Modalidad de entrega: UPLOAD_PDF -->
+      <ng-container *ngIf="modalidadEntrega() === 'UPLOAD_PDF'">
+        <div class="dropzone">
+          <label class="referencias-label">Documento de la propuesta (PDF)</label>
+          <input type="file" accept="application/pdf" (change)="onArchivoSeleccionado($event)" [disabled]="!tieneModalidadSeleccionada" />
+          <button type="button" class="btn secondary sm" (click)="subirPdf()"
+                  [disabled]="!archivoPdf || subiendoPdf() || !tieneModalidadSeleccionada">
+            {{ subiendoPdf() ? 'Subiendo...' : 'Subir PDF' }}
+          </button>
+          <div class="alert ok" *ngIf="urlPdfSubido()">Archivo subido correctamente.</div>
+          <div class="alert error" *ngIf="errorPdf()">{{ errorPdf() }}</div>
+        </div>
+      </ng-container>
+
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <!-- PASO 3: Revisar con IA ANTES de enviar                        -->
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <div class="ia-previa-wrapper" *ngIf="tieneModalidadSeleccionada">
+        <hr class="ia-separador" />
+
+        <div class="ia-previa-header">
+          <span class="ia-icono">✦</span>
+          <div>
+            <h3>Paso 3: Revisar con IA antes de enviar</h3>
+            <p class="hint">Analiza tu borrador y mejóralo antes de enviarlo a la comisión.</p>
+          </div>
+        </div>
+
+        <!-- Controles de análisis -->
+        <div class="ia-controles" *ngIf="!analizandoIA()">
+          <label class="label-inline">Tipo de análisis
+            <select [(ngModel)]="modoIA" class="select-modo">
+              <option value="integral">Evaluación integral</option>
+              <option value="coherencia">Coherencia interna</option>
+              <option value="pertinencia">Pertinencia a la carrera</option>
+              <option value="viabilidad">Viabilidad del proyecto</option>
+            </select>
+          </label>
+          <label class="label-inline">Nota adicional (opcional)
+            <input type="text" [(ngModel)]="instruccionIA"
+                   placeholder="Ej: El proyecto debe completarse en 6 meses..." />
+          </label>
+          <button class="btn ia-btn" (click)="analizarConIA()"
+                  [disabled]="!form.titulo.trim()">
+            ✦ Analizar borrador con IA
+          </button>
+          <button class="btn secondary btn-sm" (click)="limpiarIA()"
+                  *ngIf="feedbackIA() || errorIA()">
+            ✕ Limpiar análisis
+          </button>
+        </div>
+
+        <!-- Cargando -->
+        <div class="ia-loading" *ngIf="analizandoIA()">
+          <div class="spinner-ia"></div>
+          <p>Analizando tu borrador con IA... esto puede tomar unos segundos.</p>
+        </div>
+
+        <!-- Error IA -->
+        <div class="alert error" *ngIf="errorIA()">{{ errorIA() }}</div>
+
+        <!-- Resultado IA -->
+        <div class="ia-resultado" *ngIf="feedbackIA() as fb">
+
+          <div class="ia-resultado-header">
+            <div class="ia-contexto" *ngIf="respuestaIA() as resp">
+              <span class="ctx-tag">{{ resp.nombreCarrera }}</span>
+              <span class="ctx-tag modalidad-tag">{{ resp.modalidadTitulacion }}</span>
+            </div>
+            <div class="ia-badges">
+              <span class="badge-evaluacion" [ngClass]="colorEstado">
+                {{ fb.estado_evaluacion === 'APROBABLE'        ? '✅ Aprobable' :
+                fb.estado_evaluacion === 'REQUIERE_AJUSTES' ? '⚠️ Requiere ajustes' :
+                  fb.estado_evaluacion === 'RECHAZABLE'       ? '❌ Rechazable' : fb.estado_evaluacion }}
+              </span>
+              <span class="badge-puntaje">{{ fb.puntaje_estimado }}/100</span>
+              <span class="badge-pertinencia" [ngClass]="{
+                'pertinencia-alta':  fb.pertinencia_carrera === 'ALTA',
+                'pertinencia-media': fb.pertinencia_carrera === 'MEDIA',
+                'pertinencia-baja':  fb.pertinencia_carrera === 'BAJA'
+              }">
+                Pertinencia: {{ fb.pertinencia_carrera }}
+              </span>
+            </div>
+          </div>
+
+          <div class="ia-secciones">
+            <div class="ia-seccion">
+              <span class="seccion-label">Título</span>
+              <p>{{ fb.analisis_titulo }}</p>
+            </div>
+            <div class="ia-seccion">
+              <span class="seccion-label">Objetivos</span>
+              <p>{{ fb.analisis_objetivos }}</p>
+            </div>
+            <div class="ia-seccion">
+              <span class="seccion-label">Metodología</span>
+              <p>{{ fb.analisis_metodologia }}</p>
+            </div>
+          </div>
+
+          <div class="ia-dos-col">
+            <div class="ia-col verde">
+              <h4>✅ Fortalezas</h4>
+              <ul>
+                <li *ngFor="let f of fb.fortalezas">{{ f }}</li>
+              </ul>
+              <p *ngIf="fb.fortalezas.length === 0" class="muted">No se identificaron fortalezas.</p>
+            </div>
+            <div class="ia-col rojo">
+              <h4>⚠️ Debilidades</h4>
+              <ul>
+                <li *ngFor="let d of fb.debilidades">{{ d }}</li>
+              </ul>
+              <p *ngIf="fb.debilidades.length === 0" class="muted">No se identificaron debilidades.</p>
+            </div>
+          </div>
+
+          <div class="ia-sugerencias" *ngIf="fb.sugerencias_mejora.length > 0">
+            <h4>💡 Sugerencias de mejora</h4>
+            <ol>
+              <li *ngFor="let s of fb.sugerencias_mejora">{{ s }}</li>
+            </ol>
+          </div>
+
+          <div class="ia-mensaje">
+            <span class="ia-icono-msg">✦</span>
+            <p>{{ fb.mensaje_estudiante }}</p>
+          </div>
+
+          <!-- Botón volver a analizar -->
+          <div class="ia-reanalizar">
+            <button class="btn secondary" (click)="limpiarIA()">
+              ↻ Modificar propuesta y volver a analizar
+            </button>
+          </div>
+
+        </div><!-- /ia-resultado -->
+      </div><!-- /ia-previa-wrapper -->
+
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <!-- PASO 4: Enviar propuesta                                       -->
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <hr class="ia-separador" *ngIf="tieneModalidadSeleccionada" />
+
+      <small class="warn-inline" *ngIf="!tieneModalidadSeleccionada">
+        Debes registrar tu modalidad antes de enviar tu propuesta.
+      </small>
+
+      <div class="envio-wrapper" *ngIf="tieneModalidadSeleccionada">
+        <p class="hint-envio" *ngIf="!feedbackIA()">
+          💡 Te recomendamos analizar tu borrador con IA antes de enviar.
+        </p>
+        <p class="hint-envio aprobable" *ngIf="feedbackIA()?.estado_evaluacion === 'APROBABLE'">
+          ✅ La IA considera tu propuesta lista para enviar. ¡Adelante!
+        </p>
+        <p class="hint-envio advertencia" *ngIf="feedbackIA()?.estado_evaluacion === 'REQUIERE_AJUSTES'">
+          ⚠️ La IA sugiere ajustes. Puedes enviar igualmente o mejorar primero.
+        </p>
+        <p class="hint-envio error-hint" *ngIf="feedbackIA()?.estado_evaluacion === 'RECHAZABLE'">
+          ❌ La IA recomienda mejorar la propuesta antes de enviar.
+        </p>
+
+        <button class="btn primary btn-enviar" (click)="enviar()"
+                [disabled]="saving() || !tieneModalidadSeleccionada">
+          {{ saving() ? 'Enviando...' : '→ Enviar propuesta a la comisión' }}
+        </button>
+      </div>
+
+    </article>
+
+    <!-- MIS PROPUESTAS -->
+    <article class="card">
+      <h2>Mis propuestas</h2>
+      <button class="btn secondary" (click)="cargarHistorial()" [disabled]="loading()">↻ Recargar historial</button>
+      <div class="empty" *ngIf="!loading() && historial().length === 0">Aún no has enviado propuestas.</div>
+
+      <ul class="list" *ngIf="historial().length > 0">
+        <li *ngFor="let p of historial()">
+          <div class="propuesta-header">
+            <strong>{{ p.titulo }}</strong>
+          </div>
+          <p>{{ p.tema || 'Sin tema' }}</p>
+          <small>Estado: <span [class]="'badge-estado-' + p.estado.toLowerCase()">{{ p.estado }}</span>
+            · {{ p.fechaEnvio || 'Sin fecha' }}</small>
+          <p *ngIf="p.observaciones"><em>Observación: {{ p.observaciones }}</em></p>
+        </li>
+      </ul>
+    </article>
+  </div>
+
+</section>

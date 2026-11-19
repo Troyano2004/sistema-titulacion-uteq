@@ -1,0 +1,67 @@
+<div class="validacion-expediente">
+  <h2>Validación de Expedientes</h2>
+  <p class="subtitle">Secretaría-Abogacía / Coordinación</p>
+
+  <div class="alert error" *ngIf="error()">{{ error() }}</div>
+  <div class="alert ok" *ngIf="ok()">{{ ok() }}</div>
+
+  <div class="filtros">
+    <select [(ngModel)]="filtroCarrera" (ngModelChange)="buscar()">
+      <option [ngValue]="null">-- Todas las carreras --</option>
+      <option *ngFor="let c of carreras()" [ngValue]="c.idCarrera">{{ c.nombre }}</option>
+    </select>
+    <input type="text" [(ngModel)]="filtroPeriodo" (change)="buscar()" placeholder="Periodo (ej. 2025-2025)">
+    <select [(ngModel)]="filtroEstado" (ngModelChange)="buscar()">
+      <option value="">-- Todos los estados --</option>
+      <option value="INCOMPLETO">Incompletos</option>
+      <option value="COMPLETO">Completos</option>
+      <option value="VALIDADO">Validados</option>
+      <option value="LEGALIZADO">Legalizados</option>
+    </select>
+  </div>
+
+  <div class="loading" *ngIf="loading()">Cargando...</div>
+
+  <table class="tabla-expedientes" *ngIf="!loading()">
+    <thead>
+      <tr><th>Estudiante</th><th>Modalidad</th><th>Periodo</th><th>Estado</th><th>Faltantes</th><th></th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let e of expedientes()">
+        <td>{{ e.nombreEstudiante }}</td>
+        <td>{{ e.modalidad }}</td>
+        <td>{{ e.periodoTitulacion }}</td>
+        <td><span class="badge" [class]="e.estado">{{ e.estado }}</span></td>
+        <td><span class="faltantes" [class.hay]="documentosFaltantes(e) > 0">{{ documentosFaltantes(e) }}</span></td>
+        <td><button type="button" (click)="verDetalle(e)">Ver expediente</button></td>
+      </tr>
+      <tr *ngIf="!expedientes().length"><td colspan="6" class="empty">No hay expedientes para los filtros seleccionados</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Modal detalle -->
+  <div class="modal-overlay" *ngIf="expedienteSeleccionado() as exp" (click)="cerrarDetalle()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>{{ exp.nombreEstudiante }} — {{ exp.modalidad }}</h3>
+      <table class="tabla-documentos">
+        <thead><tr><th>Documento</th><th>Estado</th><th>Archivo</th><th>Acciones</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let d of exp.documentos">
+            <td>{{ d.codigo }}. {{ d.nombre }}</td>
+            <td><span class="badge-doc" [class]="d.estado">{{ d.estado }}</span></td>
+            <td><a *ngIf="d.archivoUrl" [href]="d.archivoUrl" target="_blank">Ver</a><span *ngIf="!d.archivoUrl">—</span></td>
+            <td class="acciones" *ngIf="d.estado === 'CARGADO'">
+              <button type="button" (click)="validar(d)">Validar</button>
+              <input type="text" [(ngModel)]="motivoRechazo[d.id]" [ngModelOptions]="{standalone:true}" placeholder="Motivo de rechazo">
+              <button type="button" class="btn-danger" (click)="rechazar(d)">Rechazar</button>
+            </td>
+            <td *ngIf="d.estado !== 'CARGADO'">
+              <span class="motivo" *ngIf="d.motivoRechazo">{{ d.motivoRechazo }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="button" class="btn-cerrar" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>

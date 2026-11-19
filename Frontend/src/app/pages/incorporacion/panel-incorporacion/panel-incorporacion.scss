@@ -1,0 +1,62 @@
+.panel-incorporacion {
+  padding: 24px; max-width: 1100px; margin: 0 auto;
+
+  h2 { margin: 0 0 16px; font-size: 1.4rem; }
+
+  .alert {
+    padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; font-size: .9rem;
+    &.error { background: #fff0f0; border-left: 4px solid #e53e3e; color: #c53030; }
+    &.ok    { background: #f0fff4; border-left: 4px solid #38a169; color: #276749; }
+  }
+  .loading { color: #666; padding: 8px 0; }
+
+  .filtros { margin-bottom: 16px; select { padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; } }
+
+  .layout { display: grid; grid-template-columns: 340px 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+
+  .lista {
+    background: #fff; border-radius: 10px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    max-height: 75vh; overflow-y: auto;
+    .fila {
+      padding: 10px 12px; border-radius: 6px; cursor: pointer; margin-bottom: 6px; font-size: .85rem;
+      &:hover { background: #f7fafc; } &.activa { background: #ebf8ff; }
+      .nombre { font-weight: 600; }
+      .carrera { color: #718096; font-size: .78rem; }
+      .badge {
+        display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 10px; font-size: .68rem; font-weight: 700; color: #fff;
+        &.GENERADA { background: #d69e2e; } &.FIRMADA { background: #3182ce; } &.REGISTRADA_SENESCYT { background: #38a169; }
+      }
+      .firmas { display: flex; gap: 4px; margin-top: 4px;
+        span { width: 20px; height: 20px; border-radius: 50%; background: #e2e8f0; color: #a0aec0; font-size: .65rem;
+               display: flex; align-items: center; justify-content: center; font-weight: 700;
+               &.ok { background: #38a169; color: #fff; } }
+      }
+    }
+    .empty { color: #999; text-align: center; padding: 20px; font-size: .85rem; }
+  }
+
+  .detalle {
+    background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    h3 { margin: 0 0 8px; } h4 { margin: 16px 0 8px; font-size: .9rem; }
+    .notas { color: #4a5568; font-size: .88rem; }
+    .estado-actual .badge {
+      padding: 2px 10px; border-radius: 12px; font-size: .72rem; font-weight: 700; color: #fff;
+      &.GENERADA { background: #d69e2e; } &.FIRMADA { background: #3182ce; } &.REGISTRADA_SENESCYT { background: #38a169; }
+    }
+    button { padding: 7px 14px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; cursor: pointer; margin-right: 8px; font-size: .82rem;
+      &:disabled { background: #ecfdf3; color: #276749; border-color: #c6f6d5; cursor: default; } }
+    input { padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin-right: 8px; font-size: .85rem; }
+    .fecha-actual { color: #718096; font-size: .8rem; margin-left: 8px; }
+    .registrado { color: #276749; font-weight: 600; }
+  }
+}
+
+:host-context(body.dark-mode) .panel-incorporacion {
+  h2 { color: #f1f5f9; }
+  .filtros select { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+  .lista, .detalle { background: #1e293b; }
+  .lista .fila:hover { background: #263448; } .lista .fila.activa { background: #0f2a3d; }
+  .detalle h3, .detalle h4 { color: #f1f5f9; }
+  .detalle input, .detalle button { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+}

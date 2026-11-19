@@ -1,0 +1,63 @@
+.trazabilidad {
+  padding: 24px; max-width: 900px; margin: 0 auto;
+
+  h1 { margin: 0 0 4px; font-size: 1.4rem; }
+  .subtitle { color: #666; margin: 0 0 20px; font-size: .82rem; max-width: 640px; }
+
+  .filtros {
+    background: #fff; border-radius: 10px; padding: 16px; margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    label { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; color: #4a5568; font-weight: 600; }
+    select { padding: 7px 8px; border-radius: 6px; border: 1px solid #cbd5e0; font-size: .85rem; min-width: 320px; }
+  }
+
+  .alert { padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; font-size: .85rem; }
+  .alert.error { background: #fff0f0; border-left: 4px solid #e53e3e; color: #c53030; }
+  .alert.info { background: #ebf8ff; border-left: 4px solid #3182ce; color: #2c5282; }
+
+  .resumen-estudiante {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    background: #fff; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05); font-size: .85rem; color: #4a5568;
+    strong { font-size: .95rem; color: #2d3748; }
+    .total-eventos { margin-left: auto; background: #edf2f7; padding: 3px 10px; border-radius: 12px; font-size: .75rem; }
+  }
+
+  .timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 7px; top: 6px; bottom: 6px; width: 2px; background: #cbd5e0;
+  }
+
+  .evento {
+    position: relative; padding-left: 30px; margin-bottom: 14px;
+    .punto {
+      position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%;
+      background: #0f7a3a; border: 3px solid #fff; box-shadow: 0 0 0 2px #0f7a3a;
+    }
+    .contenido {
+      background: #fff; border-radius: 8px; padding: 12px 14px; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    }
+    .cabecera { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .etapa { font-weight: 700; font-size: .88rem; color: #2d3748; }
+    .fecha { font-size: .75rem; color: #a0aec0; white-space: nowrap; }
+    .meta { display: flex; gap: 10px; margin-top: 4px; font-size: .78rem; color: #718096; }
+    .estado { background: #f0fff4; color: #276749; padding: 1px 8px; border-radius: 10px; font-weight: 600; }
+    .detalle { margin-top: 8px; font-size: .8rem; color: #4a5568; border-top: 1px dashed #e2e8f0; padding-top: 8px; }
+    &.expandido .contenido { box-shadow: 0 4px 14px rgba(0,0,0,.1); }
+  }
+
+  .empty { text-align: center; color: #999; padding: 20px; }
+}
+
+:host-context(body.dark-mode) .trazabilidad {
+  h1 { color: #f1f5f9; } .subtitle { color: #94a3b8; }
+  .filtros, .resumen-estudiante, .evento .contenido { background: #1e293b; box-shadow: none; }
+  .filtros label { color: #94a3b8; }
+  select { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+  .resumen-estudiante strong { color: #f1f5f9; }
+  .etapa { color: #f1f5f9; }
+  .meta, .fecha { color: #94a3b8; }
+  .detalle { color: #cbd5e0; border-top-color: #334155; }
+  .timeline::before { background: #334155; }
+}
