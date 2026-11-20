@@ -2,6 +2,7 @@ package com.erwin.backend.controller;
 
 import com.erwin.backend.dtos.*;
 import com.erwin.backend.service.DocumentoTitulacionService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -55,10 +56,11 @@ public class DocumentoTitulacionController {
     }
 
     @PostMapping("/director/{idDocente}/documento/{idDocumento}/observacion")
-    public ObservacionDto agregarObs(@PathVariable Integer idDocente,
-                                     @PathVariable Integer idDocumento,
-                                     @RequestBody CrearObservacionRequest req) {
-        return service.agregarObservacion(idDocente, idDocumento, req);
+    public ResponseEntity<ObservacionDto> agregarObs(@PathVariable Integer idDocente,
+                                                     @PathVariable Integer idDocumento,
+                                                     @RequestBody CrearObservacionRequest req) {
+        ObservacionDto creada = service.agregarObservacion(idDocente, idDocumento, req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
 
     @PostMapping("/director/{idDocente}/documento/{idDocumento}/devolver")

@@ -11,6 +11,7 @@ import com.erwin.backend.repository.EstudianteRepository;
 import com.erwin.backend.repository.SustentacionRepository;
 import com.erwin.backend.repository.TribunalProyectoRepository;
 import com.erwin.backend.security.AuthorizationService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -58,7 +59,7 @@ public class DocumentoTitulacionService {
     public DocumentoTitulacionDto guardarCambios(Integer idEstudiante, DocumentoUpdateRequest req) {
         authorizationService.exigirPropioEstudianteSiAplica(idEstudiante);
         DocumentoTitulacion doc = docRepo.findByEstudiante_IdEstudiante(idEstudiante)
-                .orElseThrow(() -> new RuntimeException("Documento no existe"));
+                .orElseThrow(() -> new EntityNotFoundException("Documento no existe"));
 
         if (!(doc.getEstado() == EstadoDocumento.BORRADOR || doc.getEstado() == EstadoDocumento.CORRECCION_REQUERIDA)) {
             throw new RuntimeException("No puedes editar en estado: " + doc.getEstado());
@@ -72,7 +73,7 @@ public class DocumentoTitulacionService {
     public void enviarRevision(Integer idEstudiante) {
         authorizationService.exigirPropioEstudianteSiAplica(idEstudiante);
         DocumentoTitulacion doc = docRepo.findByEstudiante_IdEstudiante(idEstudiante)
-                .orElseThrow(() -> new RuntimeException("Documento no existe"));
+                .orElseThrow(() -> new EntityNotFoundException("Documento no existe"));
 
         if (!(doc.getEstado() == EstadoDocumento.BORRADOR || doc.getEstado() == EstadoDocumento.CORRECCION_REQUERIDA)) {
             throw new RuntimeException("No puedes enviar a revisión en estado: " + doc.getEstado());
@@ -90,7 +91,7 @@ public class DocumentoTitulacionService {
     @Transactional
     public ObservacionDto agregarObservacion(Integer idDocente, Integer idDocumento, CrearObservacionRequest req) {
         DocumentoTitulacion doc = docRepo.findById(idDocumento)
-                .orElseThrow(() -> new RuntimeException("Documento no existe"));
+                .orElseThrow(() -> new EntityNotFoundException("Documento no existe"));
 
         if (doc.getEstado() != EstadoDocumento.EN_REVISION) {
             throw new RuntimeException("Solo se puede observar si está EN_REVISION");
@@ -113,7 +114,7 @@ public class DocumentoTitulacionService {
     @Transactional
     public void devolverConObservaciones(Integer idDocente, Integer idDocumento) {
         DocumentoTitulacion doc = docRepo.findById(idDocumento)
-                .orElseThrow(() -> new RuntimeException("Documento no existe"));
+                .orElseThrow(() -> new EntityNotFoundException("Documento no existe"));
 
         if (doc.getEstado() != EstadoDocumento.EN_REVISION) {
             throw new RuntimeException("Documento no está EN_REVISION");
@@ -126,7 +127,7 @@ public class DocumentoTitulacionService {
     @Transactional
     public void aprobar(Integer idDocente, Integer idDocumento) {
         DocumentoTitulacion doc = docRepo.findById(idDocumento)
-                .orElseThrow(() -> new RuntimeException("Documento no existe"));
+                .orElseThrow(() -> new EntityNotFoundException("Documento no existe"));
 
         if (doc.getEstado() != EstadoDocumento.EN_REVISION) {
             throw new RuntimeException("Documento no está EN_REVISION");
@@ -180,7 +181,7 @@ public class DocumentoTitulacionService {
     // ====== OBSERVACIONES (para estudiante/ver) ======
     public List<ObservacionDto> listarObservaciones(Integer idDocumento) {
         DocumentoTitulacion doc = docRepo.findById(idDocumento)
-                .orElseThrow(() -> new RuntimeException("Documento no existe"));
+                .orElseThrow(() -> new EntityNotFoundException("Documento no existe"));
         if (doc.getEstudiante() != null) {
             authorizationService.exigirPropioEstudianteSiAplica(doc.getEstudiante().getIdEstudiante());
         }
@@ -348,7 +349,7 @@ public class DocumentoTitulacionService {
 
     public DocumentoTitulacionDto obtenerPorIdDocumento(Integer idDocumento) {
         DocumentoTitulacion doc = docRepo.findById(idDocumento)
-                .orElseThrow(() -> new RuntimeException("Documento no existe"));
+                .orElseThrow(() -> new EntityNotFoundException("Documento no existe"));
         if (doc.getEstudiante() != null) {
             authorizationService.exigirPropioEstudianteSiAplica(doc.getEstudiante().getIdEstudiante());
         }
